@@ -1,6 +1,7 @@
 #include <iostream>
 
 #include "Matrix.h"
+#include "coder/PolarCoder.h"
 
 int main() {
     auto a = Matrix<int>(2, 3);
@@ -19,7 +20,7 @@ int main() {
             b[i][j] = i * w1 + j + 1;
         }
     }
-    auto res = a * b;
-    std::cout << res;
+    auto cW = PolarCoder::encode(std::vector<uint64_t>{1, 1}, std::set<size_t>{1, 3}, std::vector<uint64_t>{1, 0});
+    std::cout << cW[0] << cW[1] << cW[2] << cW[3];
     return 0;
 }
