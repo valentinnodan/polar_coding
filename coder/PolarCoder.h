@@ -10,7 +10,6 @@
 #include <cmath>
 
 
-//did not count B_N in encoding to simplify the implementation
 class PolarCoder {
 public:
     static std::vector<uint64_t>
@@ -18,6 +17,10 @@ public:
 
 private:
     const static Matrix<uint64_t> F;
+    const static Matrix<uint64_t> I2;
 
+    static Matrix<uint64_t> getFN(int n);
+    static Matrix<uint64_t> RN(Matrix<uint64_t> m);
+    static Matrix<uint64_t> getBN(int n);
     static Matrix<uint64_t> getGN(int n);
 };

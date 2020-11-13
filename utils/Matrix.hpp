@@ -2,6 +2,8 @@
 // Created by valentinnodan on 11/5/20.
 //
 
+#include "Matrix.h"
+
 template<typename T>
 Matrix<T>::Matrix(size_t h, size_t w) : data(h * w), height(h), width(w) {
 }
@@ -90,5 +92,19 @@ std::vector<T> Matrix<T>::dot(std::vector<T> u) {
         myRes[i] %= 2;
     }
     return myRes;
+}
+
+template<typename T>
+Matrix<T> Matrix<T>::mult(Matrix<T> a, Matrix<T> b) {
+    auto res = Matrix<T>(a.height, b.width);
+    for (int j = 0; j < b.width; ++j) {
+        for (int k = 0; k < a.height; ++k) {
+            for (int i = 0; i < a.width; ++i) {
+                res[k][j] += a[k][i] * b[i][j];
+            }
+            res[k][j] %= 2;
+        }
+    }
+    return res;
 }
 

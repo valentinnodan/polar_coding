@@ -39,10 +39,12 @@ public:
 
     std::vector<T> dot(std::vector<T> u);
 
-private:
-    std::vector<T> data;
+    static Matrix<T> mult(Matrix<T> a, Matrix<T> b);
+
     size_t height{};
     size_t width{};
+private:
+    std::vector<T> data;
 };
 
 #include "Matrix.hpp"
