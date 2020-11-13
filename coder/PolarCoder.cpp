@@ -19,7 +19,7 @@ Matrix<uint64_t> PolarCoder::getFN(int n) {
 std::vector<uint64_t> PolarCoder::encode(std::vector<uint64_t> const &u, std::set<size_t> const &indices,
                                          std::vector<uint64_t> const &frozen) {
     size_t n = indices.size() + frozen.size();
-    auto GN = getGN(log2(n));
+    auto GN = getGN(n);
     std::cout << GN;
     auto GN_c = Matrix<uint64_t>(0, n);
     auto GN_A = Matrix<uint64_t>(0, n);

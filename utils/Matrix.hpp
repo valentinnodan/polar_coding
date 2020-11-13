@@ -2,10 +2,8 @@
 // Created by valentinnodan on 11/5/20.
 //
 
-#include "Matrix.h"
-
 template<typename T>
-Matrix<T>::Matrix(size_t h, size_t w) : data(h * w), height(h), width(w) {
+Matrix<T>::Matrix(size_t h, size_t w) :  height(h), width(w), data(h * w) {
 }
 
 template<typename T>
@@ -24,7 +22,7 @@ Matrix<T> operator*(const Matrix<T> &a, const Matrix<T> &b) {
 }
 
 template<typename T>
-Matrix<T>::Matrix(size_t n) : data(n * n), height(n), width(n) {
+Matrix<T>::Matrix(size_t n) : height(n), width(n), data(n * n) {
     for (size_t i = 0; i < n; ++i) {
         data[i * n + i] = 1;
     }
@@ -57,7 +55,7 @@ std::ostream &operator<<(std::ostream &s, const Matrix<T> &m) {
 }
 
 template<typename T>
-Matrix<T>::Matrix(size_t h, size_t w, std::vector<T> vals) : data(h * w), height(h), width(w) {
+Matrix<T>::Matrix(size_t h, size_t w, std::vector<T> const &vals) : data(h * w), height(h), width(w) {
     for (size_t i = 0; i < h; ++i) {
         for (size_t j = 0; j < w; ++j) {
             data[i * w + j] = vals[i * w + j];
@@ -75,7 +73,7 @@ std::vector<T> Matrix<T>::getRow(size_t i) {
 }
 
 template<typename T>
-void Matrix<T>::addRow(std::vector<T> v) {
+void Matrix<T>::addRow(std::vector<T> const &v) {
     height += 1;
     for (T i: v) {
         data.push_back(i);
@@ -83,7 +81,7 @@ void Matrix<T>::addRow(std::vector<T> v) {
 }
 
 template<typename T>
-std::vector<T> Matrix<T>::dot(std::vector<T> u) {
+std::vector<T> Matrix<T>::dot(std::vector<T> const &u) {
     auto myRes = std::vector<T>(width, 0);
     for (size_t i = 0; i < width; i++) {
         for (size_t j = 0; j < height; j++) {
@@ -95,7 +93,7 @@ std::vector<T> Matrix<T>::dot(std::vector<T> u) {
 }
 
 template<typename T>
-Matrix<T> Matrix<T>::mult(Matrix<T> a, Matrix<T> b) {
+Matrix<T> Matrix<T>::mult(Matrix<T> const &a, Matrix<T> const &b) {
     auto res = Matrix<T>(a.height, b.width);
     for (int j = 0; j < b.width; ++j) {
         for (int k = 0; k < a.height; ++k) {

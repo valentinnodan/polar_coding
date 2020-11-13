@@ -18,8 +18,7 @@ public:
 
     Matrix(size_t h, size_t w);
 
-
-    Matrix(size_t h, size_t w, std::vector<T> vals);
+    Matrix(size_t h, size_t w, std::vector<T> const &vals);
 
     std::pair<size_t, size_t> dims();
 
@@ -35,11 +34,11 @@ public:
 
     std::vector<T> getRow(size_t i);
 
-    void addRow(std::vector<T> v);
+    void addRow(std::vector<T> const &v);
 
-    std::vector<T> dot(std::vector<T> u);
+    std::vector<T> dot(std::vector<T> const &u);
 
-    static Matrix<T> mult(Matrix<T> a, Matrix<T> b);
+    static Matrix<T> mult(Matrix<T> const &a, Matrix<T> const &b);
 
     size_t height{};
     size_t width{};
