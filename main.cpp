@@ -2,6 +2,7 @@
 
 #include "Matrix.h"
 #include "coder/PolarCoder.h"
+#include "construct/PolarCodeConstruct.h"
 
 int main() {
     auto a = Matrix<int>(2, 3);
@@ -20,7 +21,17 @@ int main() {
             b[i][j] = i * w1 + j + 1;
         }
     }
-    auto cW = PolarCoder::encode(std::vector<uint64_t>{1, 1}, std::set<size_t>{1, 3}, std::vector<uint64_t>{1, 0});
+
+    auto channel = ChannelMatrix();
+    double p = 0.1;
+    double q = 0.3;
+    channel[SymbolConsts::ZERO][SymbolConsts::ZERO] = 1 - p - q;
+
+    auto cPC = PolarCodeConstruct(channel);
+
+    const auto cW = PolarCoder::encode(Message{SymbolConsts::ONE, SymbolConsts::ONE},
+                                       std::set<size_t>{1, 3},
+                                       Message{SymbolConsts::ONE, SymbolConsts::ZERO});
     std::cout << cW[0] << cW[1] << cW[2] << cW[3];
     return 0;
 }

@@ -8,29 +8,63 @@
 #include <Symbol.h>
 #include <cassert>
 
-class ChannelMatrix {
-    class Channel {
-    public:
-        explicit Channel(double *other) : data(other) {}
+namespace {
+    template<bool constant>
+    class ChannelField;
 
-        double operator[](Symbol const &a) {
-            assert(a == Symbol::ONE || a == Symbol::ZERO);
+    template<>
+    class ChannelField<true> {
+    protected:
+        double const *data;
+    public:
+
+        explicit ChannelField(double const *data1) : data(data1) {}
+    };
+
+    template<>
+    class ChannelField<false> {
+    protected:
+        double *data;
+    public:
+        explicit ChannelField(double *data1) : data(data1) {}
+    };
+
+    template<bool constant>
+    class Channel : public ChannelField<constant> {
+    public:
+        using ChannelField<constant>::ChannelField;
+        using ChannelField<constant>::data;
+
+        double &operator[](Symbol const &a) {
+            assert(a.is_input());
             return data[a.symbol];
         }
 
-    private:
-        double *data;
+        double &operator[](Symbol const &a) const {
+            assert(a.is_input());
+            return data[a.symbol];
+        }
     };
+}
+
+class ChannelMatrix {
 
 public:
-    Channel operator[](Symbol const &a) {
-        assert(a == Symbol::ONE || a == Symbol::ZERO || a == Symbol::EPS);
-        return Channel(data + a.symbol * input_symbol_num);
+    Channel<false> operator[](Symbol const &a) {
+        assert(a.is_output());
+        return Channel<false>(data + a.symbol * input_symbol_num);
+    }
+
+    Channel<true> operator[](Symbol const &a) const {
+        assert(a.is_output());
+        return Channel<true>(data + a.symbol * input_symbol_num);
     }
 
     double getWN(Message const &y, Message const &c);
 
     double getWNI(Message const &y, Message const &c, Symbol s);
+
+    double getEps();
 
     Message BEC(Message c);
 

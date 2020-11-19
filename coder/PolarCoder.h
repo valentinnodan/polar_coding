@@ -4,23 +4,31 @@
 
 #pragma once
 
+#include <cmath>
 #include <vector>
 #include <set>
+#include "Symbol.h"
 #include "Matrix.h"
-#include <cmath>
-
 
 class PolarCoder {
 public:
-    static std::vector<uint64_t>
-    encode(std::vector<uint64_t> const &u, std::set<size_t> const &indices, std::vector<uint64_t> const &frozen);
+    static Message encode(Message const &u, std::set<size_t> const &indices, Message const &frozen);
 
 private:
-    const static Matrix<uint64_t> F;
-    const static Matrix<uint64_t> I2;
+    const static Matrix<Symbol> F;
+    const static Matrix<Symbol> I2;
 
-    static Matrix<uint64_t> getFN(int n);
-    static Matrix<uint64_t> RN(Matrix<uint64_t> m);
-    static Matrix<uint64_t> getBN(int n);
-    static Matrix<uint64_t> getGN(int n);
+    static Matrix<Symbol> getFN(int n);
+
+    static Matrix<Symbol> RN(Matrix<Symbol> const &m);
+
+    static Matrix<Symbol> getBN(int n);
+
+    static Matrix<Symbol> getGN(int n);
 };
+
+inline const Matrix<Symbol> PolarCoder::F =
+        Matrix<Symbol>(2, 2, Message{SymbolConsts::ONE, SymbolConsts::ZERO,
+                                     SymbolConsts::ONE, SymbolConsts::ONE});
+inline const Matrix<Symbol> PolarCoder::I2 = Matrix<Symbol>(2);
+

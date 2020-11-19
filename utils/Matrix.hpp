@@ -2,13 +2,17 @@
 // Created by valentinnodan on 11/5/20.
 //
 
-template<typename T>
-Matrix<T>::Matrix(size_t h, size_t w) :  height(h), width(w), data(h * w) {
-}
+#include "Symbol.h"
+#include "Matrix.h"
+
 
 template<typename T>
-Matrix<T> operator*(const Matrix<T> &a, const Matrix<T> &b) {
-    auto res = Matrix<T>(a.height * b.height, a.width * b.width);
+Matrix<T>::Matrix(size_t h, size_t w) : height(h), width(w), data(h * w) {
+}
+
+template<typename T1>
+Matrix<T1> operator*(Matrix<T1> const &a, Matrix<T1> const &b) {
+    auto res = Matrix<T1>(a.height * b.height, a.width * b.width);
     for (size_t i1 = 0; i1 < a.height; ++i1) {
         for (size_t j1 = 0; j1 < a.width; ++j1) {
             for (size_t i2 = 0; i2 < b.height; ++i2) {
@@ -24,12 +28,12 @@ Matrix<T> operator*(const Matrix<T> &a, const Matrix<T> &b) {
 template<typename T>
 Matrix<T>::Matrix(size_t n) : height(n), width(n), data(n * n) {
     for (size_t i = 0; i < n; ++i) {
-        data[i * n + i] = 1;
+        data[i * n + i] = T(1);
     }
 }
 
 template<typename T>
-std::pair<size_t, size_t> Matrix<T>::dims() {
+std::pair<size_t, size_t> Matrix<T>::dims() const {
     return {height, width};
 }
 
@@ -44,7 +48,7 @@ T *Matrix<T>::operator[](size_t i) {
 }
 
 template<typename T>
-std::ostream &operator<<(std::ostream &s, const Matrix<T> &m) {
+std::ostream &operator<<(std::ostream &s, Matrix<T> const &m) {
     for (size_t i = 0; i < m.height; ++i) {
         for (size_t j = 0; j < m.width; ++j) {
             s << m[i][j] << ' ';
@@ -55,12 +59,8 @@ std::ostream &operator<<(std::ostream &s, const Matrix<T> &m) {
 }
 
 template<typename T>
-Matrix<T>::Matrix(size_t h, size_t w, std::vector<T> const &vals) : data(h * w), height(h), width(w) {
-    for (size_t i = 0; i < h; ++i) {
-        for (size_t j = 0; j < w; ++j) {
-            data[i * w + j] = vals[i * w + j];
-        }
-    }
+Matrix<T>::Matrix(size_t h, size_t w, std::vector<T> const &vals) : height(h), width(w), data(h * w) {
+    std::copy(vals.begin(), vals.begin() + h * w, data.begin());
 }
 
 template<typename T>
@@ -75,19 +75,18 @@ std::vector<T> Matrix<T>::getRow(size_t i) {
 template<typename T>
 void Matrix<T>::addRow(std::vector<T> const &v) {
     height += 1;
-    for (T i: v) {
+    for (T const &i: v) {
         data.push_back(i);
     }
 }
 
 template<typename T>
 std::vector<T> Matrix<T>::dot(std::vector<T> const &u) {
-    auto myRes = std::vector<T>(width, 0);
+    auto myRes = std::vector<T>(width, T(0));
     for (size_t i = 0; i < width; i++) {
         for (size_t j = 0; j < height; j++) {
             myRes[i] += data[j * width + i] * u[j];
         }
-        myRes[i] %= 2;
     }
     return myRes;
 }
@@ -95,14 +94,12 @@ std::vector<T> Matrix<T>::dot(std::vector<T> const &u) {
 template<typename T>
 Matrix<T> Matrix<T>::mult(Matrix<T> const &a, Matrix<T> const &b) {
     auto res = Matrix<T>(a.height, b.width);
-    for (int j = 0; j < b.width; ++j) {
-        for (int k = 0; k < a.height; ++k) {
-            for (int i = 0; i < a.width; ++i) {
+    for (size_t j = 0; j < b.width; ++j) {
+        for (size_t k = 0; k < a.height; ++k) {
+            for (size_t i = 0; i < a.width; ++i) {
                 res[k][j] += a[k][i] * b[i][j];
             }
-            res[k][j] %= 2;
         }
     }
     return res;
 }
-

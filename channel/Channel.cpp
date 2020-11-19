@@ -27,14 +27,14 @@ void increase(Message &u) {
 double ChannelMatrix::getWNI(const Message &y, const Message &u, Symbol s) {
     size_t k = y.size() - u.size() - 1;
     double res = 0;
-    auto curr = Message(u.size() + k, Symbol::ZERO);
+    auto curr = Message(u.size() + k, SymbolConsts::ZERO);
     std::copy(u.begin(), u.end(), curr.begin());
     curr[u.size()] = s;
     for (uint64_t i = 0; i < 1ull << k; i++) {
         res += getWN(y, curr);
         increase(curr);
     }
-    res /= (1ull << (y.size() - 1));
+    res /= static_cast<double>(1ull << (y.size() - 1));
     return res;
 }
 
@@ -47,4 +47,8 @@ Message ChannelMatrix::BEC(Message c) {
 //        if (curr < )
     }
     return Message();
+}
+
+double ChannelMatrix::getEps() {
+    return (*this)[SymbolConsts::EPS][SymbolConsts::ZERO];
 }

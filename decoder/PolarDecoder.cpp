@@ -7,7 +7,7 @@
 Message
 PolarDecoder::decode(Message const &y, std::set<size_t> const &indices,
                      Message const &frozen) {
-    int currFrozenInd = 0;
+    size_t currFrozenInd = 0;
     auto uI = Message();
     auto res = Message(y.size());
     for (size_t i = 0; i < y.size(); i++) {
@@ -26,10 +26,10 @@ PolarDecoder::decode(Message const &y, std::set<size_t> const &indices,
 }
 
 Symbol PolarDecoder::h(Message const &y, Message const &u) {
-    double wNIZero = myChannel.getWNI(y, u, Symbol::ZERO);
-    double wNIOne = myChannel.getWNI(y, u, Symbol::ONE);
+    const double wNIZero = myChannel.getWNI(y, u, SymbolConsts::ZERO);
+    const double wNIOne = myChannel.getWNI(y, u, SymbolConsts::ONE);
     if (wNIZero / wNIOne >= 1) {
-        return Symbol::ZERO;
+        return SymbolConsts::ZERO;
     }
-    return Symbol::ONE;
+    return SymbolConsts::ONE;
 }

@@ -20,7 +20,7 @@ public:
 
     Matrix(size_t h, size_t w, std::vector<T> const &vals);
 
-    std::pair<size_t, size_t> dims();
+    [[nodiscard]] std::pair<size_t, size_t> dims() const;
 
     template<typename T1>
     friend Matrix<T1> operator*(Matrix<T1> const &a, Matrix<T1> const &b);
