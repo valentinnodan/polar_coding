@@ -15,10 +15,10 @@ class PolarDecoder {
 public:
     explicit PolarDecoder(ChannelMatrix const & m): myChannel(m){}
     Message
-    decode(Message const &y, std::set<size_t> const &indices, Message const &frozen);
+    decode(Message const &y, std::set<size_t> const &indices, Message const &frozen) const;
 
 private:
-    Symbol h(Message const &y, Message const &u);
+    Symbol h(Message const &y, Message const &u) const;
     ChannelMatrix myChannel;
 };
 

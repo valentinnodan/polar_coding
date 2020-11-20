@@ -17,7 +17,6 @@ Message PolarCoder::encode(Message const &u, std::set<size_t> const &indices,
                            Message const &frozen) {
     size_t n = indices.size() + frozen.size();
     auto GN = getGN(n);
-    std::cout << GN;
     auto GN_c = Matrix<Symbol>(0, n);
     auto GN_A = Matrix<Symbol>(0, n);
     for (size_t i = 0; i < n; ++i) {
@@ -27,10 +26,6 @@ Message PolarCoder::encode(Message const &u, std::set<size_t> const &indices,
             GN_c.addRow(GN.getRow(i));
         }
     }
-    std::cout << '\n';
-    std::cout << GN_c;
-    std::cout << '\n';
-    std::cout << GN_A;
     auto x_A = GN_A.dot(u);
     auto x_c = GN_c.dot(frozen);
     auto codeWord = Message(x_A.size());
@@ -51,7 +46,6 @@ Matrix<Symbol> PolarCoder::RN(Matrix<Symbol> const &m) {
             }
         }
     }
-    std::cout << res << '\n';
     return res;
 }
 

@@ -3,6 +3,7 @@
 #include "Matrix.h"
 #include "coder/PolarCoder.h"
 #include "construct/PolarCodeConstruct.h"
+#include "decoder/PolarDecoder.h"
 
 int main() {
     auto a = Matrix<int>(2, 3);
@@ -22,16 +23,38 @@ int main() {
         }
     }
 
-    auto channel = ChannelMatrix();
-    double p = 0.1;
-    double q = 0.3;
-    channel[SymbolConsts::ZERO][SymbolConsts::ZERO] = 1 - p - q;
-
+    double p = 0;
+    double q = 0.5;
+    auto channel = ChannelMatrix(p, q);
     auto cPC = PolarCodeConstruct(channel);
+    int n = 4;
+    int k = 2;
+    auto A = cPC.construct(n, k);
+    std::cout << "A = ";
+    for (auto x : A) {
+        std::cout << x << " ";
+    }
+    std::cout << "\n";
 
+
+    auto frozen = Message{SymbolConsts::ONE, SymbolConsts::ZERO};
     const auto cW = PolarCoder::encode(Message{SymbolConsts::ONE, SymbolConsts::ONE},
-                                       std::set<size_t>{1, 3},
-                                       Message{SymbolConsts::ONE, SymbolConsts::ZERO});
-    std::cout << cW[0] << cW[1] << cW[2] << cW[3];
+                                       A,
+                                       frozen);
+    std::cout << "Code word:    ";
+    for (int i = 0; i < n; ++i) {
+        std::cout << cW[i];
+    }
+    std::cout << "\n";
+
+
+    const auto becWord = channel.BEC(cW);
+    const auto decoder = PolarDecoder(channel);
+    auto decodedWord = decoder.decode(becWord, A, frozen);
+    std::cout << "Decoded word: ";
+    for (size_t i = 0; i < n; ++i) {
+        std::cout << decodedWord[i];
+    }
+
     return 0;
 }

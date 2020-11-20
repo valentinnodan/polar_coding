@@ -5,7 +5,7 @@
 #include <random>
 #include "Channel.h"
 
-double ChannelMatrix::getWN(const Message &y, const Message &c) {
+double ChannelMatrix::getWN(Message const &y, Message const &c) const {
     double res = 1;
     for (size_t i = 0; i < y.size(); ++i) {
         res *= (*this)[y[i]][c[i]];
@@ -24,12 +24,13 @@ void increase(Message &u) {
     }
 }
 
-double ChannelMatrix::getWNI(const Message &y, const Message &u, Symbol s) {
+double ChannelMatrix::getWNI(const Message &y, const Message &u, Symbol s) const {
     size_t k = y.size() - u.size() - 1;
     double res = 0;
-    auto curr = Message(u.size() + k, SymbolConsts::ZERO);
+    auto curr = Message(u.size() + k + 1, SymbolConsts::ZERO);
     std::copy(u.begin(), u.end(), curr.begin());
     curr[u.size()] = s;
+    assert(curr.size() == y.size());
     for (uint64_t i = 0; i < 1ull << k; i++) {
         res += getWN(y, curr);
         increase(curr);
@@ -38,17 +39,25 @@ double ChannelMatrix::getWNI(const Message &y, const Message &u, Symbol s) {
     return res;
 }
 
-Message ChannelMatrix::BEC(Message c) {
-    std::random_device rd;  //Will be used to obtain a seed for the random number engine
-    std::mt19937 gen(rd()); //Standard mersenne_twister_engine seeded with rd()
+Message ChannelMatrix::BEC(Message const &c) {
+    std::random_device rd;
+    std::mt19937 gen(rd());
     std::uniform_real_distribution<double> dis(0.0, 1.0);
-    for (int n = 0; n < 10; ++n) {
+    Message output;
+    for (auto symb : c) {
         double curr = dis(gen);
-//        if (curr < )
+        double sum = 0.0;
+        for (size_t i = 0; i < output_symbol_num; ++i) {
+            sum += (*this)[Symbol(i)][symb];
+            if (sum >= curr) {
+                output.push_back(Symbol(i));
+                break;
+            }
+        }
     }
-    return Message();
+    return output;
 }
 
-double ChannelMatrix::getEps() {
+double ChannelMatrix::getEps() const {
     return (*this)[SymbolConsts::EPS][SymbolConsts::ZERO];
 }
