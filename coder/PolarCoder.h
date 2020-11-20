@@ -14,6 +14,8 @@ class PolarCoder {
 public:
     static Message encode(Message const &u, std::set<size_t> const &indices, Message const &frozen);
 
+    static Matrix<Symbol> getGN(int n);
+
 private:
     const static Matrix<Symbol> F;
     const static Matrix<Symbol> I2;
@@ -24,7 +26,6 @@ private:
 
     static Matrix<Symbol> getBN(int n);
 
-    static Matrix<Symbol> getGN(int n);
 };
 
 inline const Matrix<Symbol> PolarCoder::F =

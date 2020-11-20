@@ -27,8 +27,12 @@ int main() {
     double q = 0.5;
     auto channel = ChannelMatrix(p, q);
     auto cPC = PolarCodeConstruct(channel);
-    int n = 4;
-    int k = 2;
+
+    auto frozen = Message{SymbolConsts::ZERO, SymbolConsts::ZERO, SymbolConsts::ZERO, SymbolConsts::ZERO};
+    const auto myMsg = Message{SymbolConsts::ONE, SymbolConsts::ONE, SymbolConsts::ZERO, SymbolConsts::ONE};
+    const int k = myMsg.size();
+    const int n = static_cast<uint64_t>(k) + frozen.size();
+
     auto A = cPC.construct(n, k);
     std::cout << "A = ";
     for (auto x : A) {
@@ -36,11 +40,21 @@ int main() {
     }
     std::cout << "\n";
 
-
-    auto frozen = Message{SymbolConsts::ONE, SymbolConsts::ZERO};
-    const auto cW = PolarCoder::encode(Message{SymbolConsts::ONE, SymbolConsts::ONE},
-                                       A,
-                                       frozen);
+    const auto cW = PolarCoder::encode(
+            myMsg,
+            A,
+            frozen);
+    std::cout << "Word coded:   ";
+    size_t myMsgInd = 0;
+    size_t frozenInd = 0;
+    for (size_t i = 0; i < n; ++i) {
+        if (A.count(i) == 1) {
+            std::cout << myMsg[myMsgInd++];
+        } else {
+            std::cout << frozen[frozenInd++];
+        }
+    }
+    std::cout << "\n";
     std::cout << "Code word:    ";
     for (int i = 0; i < n; ++i) {
         std::cout << cW[i];

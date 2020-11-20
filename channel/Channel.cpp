@@ -4,8 +4,10 @@
 
 #include <random>
 #include "Channel.h"
+#include "../coder/PolarCoder.h"
 
-double ChannelMatrix::getWN(Message const &y, Message const &c) const {
+double ChannelMatrix::getWN(Message const &y, Message const &u) const {
+    auto c = PolarCoder::getGN(y.size()).dot(u);
     double res = 1;
     for (size_t i = 0; i < y.size(); ++i) {
         res *= (*this)[y[i]][c[i]];

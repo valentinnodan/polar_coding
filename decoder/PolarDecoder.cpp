@@ -8,14 +8,13 @@ Message
 PolarDecoder::decode(Message const &y, std::set<size_t> const &indices,
                      Message const &frozen) const {
     size_t currFrozenInd = 0;
-    auto uI = Message(); // TODO: Why empty?
+    auto uI = Message();
     auto res = Message(y.size());
     for (size_t i = 0; i < y.size(); i++) {
         Symbol currU{0};
         if (indices.count(i) == 0) {
-            currU = frozen[currFrozenInd];
+            currU = frozen[currFrozenInd++];
             res[i] = currU;
-            currFrozenInd++;
         } else {
             currU = h(y, uI);
             res[i] = currU;
