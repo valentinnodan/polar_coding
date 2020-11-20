@@ -32,6 +32,11 @@ namespace Internal {
     public:
         explicit ChannelBase(double *data1) : data(data1) {}
 
+        double const &operator[](Symbol const &a) const {
+            assert(a.is_input());
+            return data[a.symbol];
+        }
+
         double &operator[](Symbol const &a) {
             assert(a.is_input());
             return data[a.symbol];
