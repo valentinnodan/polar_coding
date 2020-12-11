@@ -13,39 +13,25 @@
 
 class Symbol {
 public:
-    uint8_t symbol{0};
-
-    enum values {
-        symbol_zero = 0,
-        symbol_one = 1,
-        symbol_eps = 2,
-    };
+    double symbol{0};
+    double EPS = 0.000001;
 
     Symbol() = default;
 
     constexpr explicit Symbol(int val) noexcept: symbol(val) {
-        assert(is_valid());
     }
 
     constexpr friend bool operator==(Symbol const &a, Symbol const &b) {
-        return a.symbol == b.symbol;
+        return a.symbol -  b.symbol < 0.000001;
     }
 
     [[nodiscard]] constexpr bool is_input() const {
-        return this->symbol == symbol_one || this->symbol == symbol_zero;
-    }
-
-    [[nodiscard]] constexpr bool is_output() const {
-        return this->symbol == symbol_one || this->symbol == symbol_zero || this->symbol == symbol_eps;
-    }
-
-    [[nodiscard]] constexpr bool is_valid() const {
-        return is_output();
+        return this->symbol - 1 < this->EPS || this->symbol < this->EPS;
     }
 
     constexpr Symbol &operator+=(Symbol const &b) {
         assert(is_input() && b.is_input());
-        symbol = (symbol + b.symbol) % 2;
+        symbol = (int)(symbol + b.symbol) % 2;
         return *(this);
     }
 
@@ -62,7 +48,7 @@ public:
 
     constexpr friend Symbol operator+(Symbol const &a, Symbol const &b) {
         assert(a.is_input() && b.is_input());
-        return Symbol((a.symbol + b.symbol) % 2);
+        return Symbol((int)(a.symbol + b.symbol) % 2);
     }
 
     constexpr friend Symbol operator*(Symbol const &a, Symbol const &b) {
@@ -76,16 +62,14 @@ public:
 };
 
 namespace SymbolConsts {
-    inline constexpr auto ZERO = Symbol(Symbol::symbol_zero);
+    inline constexpr auto ZERO = Symbol(0);
 
-    inline constexpr auto ONE = Symbol(Symbol::symbol_one);
+    inline constexpr auto ONE = Symbol(1);
 
-    inline constexpr auto EPS = Symbol(Symbol::symbol_eps);
 }
 
 using Message = std::vector<Symbol>;
 
-static_assert(!std::numeric_limits<decltype(Symbol::symbol)>::is_signed);
 inline constexpr std::size_t input_symbol_num = 2;
 inline constexpr std::size_t output_symbol_num = 3;
 

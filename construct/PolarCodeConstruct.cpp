@@ -16,7 +16,7 @@ std::vector<double> PolarCodeConstruct::getZ(size_t n) {
 
 double PolarCodeConstruct::getZ(size_t n, size_t i) {
     if (n == 1 && i == 1) {
-        return c.getEps();
+        return eps;
     }
     if (i % 2 == 1) {
         double zValue = getZ(n / 2, ((i + 1) / 2));

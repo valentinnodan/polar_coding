@@ -39,11 +39,13 @@ std::pair<size_t, size_t> Matrix<T>::dims() const {
 
 template<typename T>
 T const *Matrix<T>::operator[](size_t i) const {
+    assert(i < height);
     return &data[i * width];
 }
 
 template<typename T>
 T *Matrix<T>::operator[](size_t i) {
+    assert(i < height);
     return &data[i * width];
 }
 
@@ -102,4 +104,13 @@ Matrix<T> Matrix<T>::mult(Matrix<T> const &a, Matrix<T> const &b) {
         }
     }
     return res;
+}
+
+template<typename T>
+Matrix<T>::Matrix(size_t h, size_t w, T val) : height(h), width(w), data(h * w) {
+    for (size_t i = 0; i < h; ++i) {
+        for (size_t j = 0 ; j < w; ++j) {
+            data[i * w + j] = val;
+        }
+    }
 }

@@ -11,9 +11,9 @@
 
 class PolarCodeConstruct {
 public:
-    ChannelMatrix c;
+    double eps;
 
-    explicit PolarCodeConstruct(ChannelMatrix c) : c(c) {
+    explicit PolarCodeConstruct(double  eps) : eps(eps) {
     };
 
     std::set<size_t> construct(size_t n, size_t k) {

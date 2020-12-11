@@ -18,6 +18,8 @@ public:
 
     Matrix(size_t h, size_t w);
 
+    Matrix(size_t h, size_t w, T val);
+
     Matrix(size_t h, size_t w, std::vector<T> const &vals);
 
     [[nodiscard]] std::pair<size_t, size_t> dims() const;
