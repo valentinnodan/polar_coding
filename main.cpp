@@ -8,12 +8,21 @@
 int main() {
     double E = 12;
     auto gaussianChannel = ChannelMatrix(E);
-    auto cPC = PolarCodeConstruct(0.25);
+    auto cPC = PolarCodeConstruct(0.5);
 
-    auto frozen = Message{SymbolConsts::ZERO, SymbolConsts::ZERO, SymbolConsts::ZERO, SymbolConsts::ZERO};
-    const auto myMsg = Message{SymbolConsts::ONE, SymbolConsts::ONE, SymbolConsts::ZERO, SymbolConsts::ONE};
-    const int k = myMsg.size();
-    const int n = static_cast<uint64_t>(k) + frozen.size();
+    auto frozen = Message(4);
+    auto myMsg =  Message(4);
+    for (size_t i = 0; i < 4; i++) {
+        frozen[i] = SymbolConsts::ZERO;
+        myMsg[i] = SymbolConsts::ONE;
+    }
+    myMsg[3] = SymbolConsts::ZERO;
+//    myMsg[5] = SymbolConsts::ZERO;
+//    myMsg[100] = SymbolConsts::ZERO;
+//    auto frozen = Message{SymbolConsts::ZERO, SymbolConsts::ZERO, SymbolConsts::ZERO, SymbolConsts::ZERO};
+//    const auto myMsg = Message{SymbolConsts::ONE, SymbolConsts::ONE, SymbolConsts::ZERO, SymbolConsts::ONE};
+    const size_t k = myMsg.size();
+    const size_t n = k + frozen.size();
 
     auto A = cPC.construct(n, k);
     std::cout << "A = ";
@@ -41,7 +50,7 @@ int main() {
     }
     std::cout << "\n";
     std::cout << "Code word:    ";
-    for (int i = 0; i < n; ++i) {
+    for (size_t i = 0; i < n; ++i) {
         std::cout << cW[i];
     }
     std::cout << "\n";
@@ -49,7 +58,7 @@ int main() {
 
     // GVM - Gauss without mistakes
     auto trueGaussWord = Message(n);
-    for (int i = 0; i < n; ++i) {
+    for (size_t i = 0; i < n; ++i) {
         if (cW[i].symbol == 0) {
             trueGaussWord[i].symbol = -1;
         } else {
@@ -66,8 +75,8 @@ int main() {
         int e = 0;
         for (size_t j = 0; j < n; ++j) {
             double diff = decodedWord[j].symbol - word[j].symbol;
-            std::cout << decodedWord[j].symbol;
-            if (abs(diff) > 0.01) {
+//            std::cout << decodedWord[j].symbol;
+            if (std::abs(diff) > 0.01) {
                 e++;
             }
         }

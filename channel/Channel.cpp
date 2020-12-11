@@ -34,3 +34,7 @@ double ChannelMatrix::getW(const Symbol &y, const Symbol &c, int n, int k) const
     return deg - log(m);
 
 }
+
+double ChannelMatrix::getSigma(int n, int k) const {
+    return 0.5 * pow(10, E / 10) * n / k;
+}

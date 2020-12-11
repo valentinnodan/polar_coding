@@ -23,4 +23,6 @@ public:
     double getW(const Symbol &y, const Symbol &c, int n, int k) const;
 
     Message Gauss(const Message &c, int n, int k);
+
+    double getSigma(int n, int k) const;
 };

@@ -9,6 +9,7 @@
 #include <set>
 #include "Symbol.h"
 #include "Matrix.h"
+#include <polar_utils.h>
 
 class PolarCoder {
 public:

@@ -18,7 +18,7 @@ PolarDecoder::decode(Message const &y, std::set<size_t> const &indices,
     for (size_t i = 0; i < n; ++i) {
         auto w0 = myChannel.getW(y[i], SymbolConsts::ZERO, N, K);
         auto w1 = myChannel.getW(y[i], SymbolConsts::ONE, N, K);
-        lN[i][nn] = std::pair<Message, double>(Message(),  w0 - w1);
+        lN[i][nn] = std::pair<Message, double>(Message(),  y[i].symbol / myChannel.getSigma(N, K));
     }
 
     auto uI = Message();
