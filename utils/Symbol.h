@@ -14,19 +14,20 @@
 class Symbol {
 public:
     double symbol{0};
-    double EPS = 0.000001;
+    static constexpr double EPS = 0.000001;
 
     Symbol() = default;
 
-    constexpr explicit Symbol(int val) noexcept: symbol(val) {
+    constexpr explicit Symbol(double val) noexcept: symbol(val) {
     }
+
 
     constexpr friend bool operator==(Symbol const &a, Symbol const &b) {
         return a.symbol -  b.symbol < 0.000001;
     }
 
     [[nodiscard]] constexpr bool is_input() const {
-        return this->symbol - 1 < this->EPS || this->symbol < this->EPS;
+        return this->symbol - 1 < EPS || this->symbol < EPS;
     }
 
     constexpr Symbol &operator+=(Symbol const &b) {
@@ -42,12 +43,14 @@ public:
     }
 
     friend std::ostream &operator<<(std::ostream &out, Symbol const &s) {
-        out << (int) s.symbol;
+        out << s.symbol;
         return out;
     }
 
     constexpr friend Symbol operator+(Symbol const &a, Symbol const &b) {
         assert(a.is_input() && b.is_input());
+        assert(a.symbol - 1.0 < EPS || a.symbol < EPS);
+        assert(b.symbol - 1.0 < EPS || b.symbol < EPS);
         return Symbol((int)(a.symbol + b.symbol) % 2);
     }
 
@@ -69,7 +72,4 @@ namespace SymbolConsts {
 }
 
 using Message = std::vector<Symbol>;
-
-inline constexpr std::size_t input_symbol_num = 2;
-inline constexpr std::size_t output_symbol_num = 3;
 

@@ -6,19 +6,21 @@
 #include "decoder/PolarDecoder.h"
 
 int main() {
-    double E = 12;
-    auto gaussianChannel = ChannelMatrix(E);
+
     auto cPC = PolarCodeConstruct(0.5);
 
-    auto frozen = Message(4);
-    auto myMsg =  Message(4);
-    for (size_t i = 0; i < 4; i++) {
+    size_t N = 16;
+    auto frozen = Message(N);
+    auto myMsg = Message(N);
+    for (size_t i = 0; i < N; i++) {
         frozen[i] = SymbolConsts::ZERO;
         myMsg[i] = SymbolConsts::ONE;
     }
     myMsg[3] = SymbolConsts::ZERO;
-//    myMsg[5] = SymbolConsts::ZERO;
+    myMsg[5] = SymbolConsts::ZERO;
 //    myMsg[100] = SymbolConsts::ZERO;
+//    myMsg[128] = SymbolConsts::ZERO;
+//    myMsg[156] = SymbolConsts::ZERO;
 //    auto frozen = Message{SymbolConsts::ZERO, SymbolConsts::ZERO, SymbolConsts::ZERO, SymbolConsts::ZERO};
 //    const auto myMsg = Message{SymbolConsts::ONE, SymbolConsts::ONE, SymbolConsts::ZERO, SymbolConsts::ONE};
     const size_t k = myMsg.size();
@@ -65,18 +67,18 @@ int main() {
             trueGaussWord[i].symbol = 1;
         }
     }
-    const auto decoder = PolarDecoder(gaussianChannel);
 
-    for (int i = 0; i < 20 ; i++) {
+    for (int i = 1; i < 2; i++) {
+        auto gaussianChannel = Channel(i);
+        const auto decoder = PolarDecoder(gaussianChannel);
         auto gaussWord = gaussianChannel.Gauss(cW, n, k);
         auto decodedWord = decoder.decode(gaussWord, A, frozen, n, k);
         std::cout << "\n";
-        std::cout << "Decoded word: ";
+        std::cout << "Decoded word error: ";
         int e = 0;
         for (size_t j = 0; j < n; ++j) {
             double diff = decodedWord[j].symbol - word[j].symbol;
-//            std::cout << decodedWord[j].symbol;
-            if (std::abs(diff) > 0.01) {
+            if (std::abs(diff) > 0.1) {
                 e++;
             }
         }

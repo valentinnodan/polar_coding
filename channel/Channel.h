@@ -10,19 +10,16 @@
 #include <cmath>
 
 
-class ChannelMatrix {
+class Channel {
 private:
-    double data[input_symbol_num * output_symbol_num]{};
     // E - отношение сигнал - шум
-    const double E;
-public:
 
-    ChannelMatrix(double E) : data(), E(E) {
+public:
+    const double E;
+    explicit Channel(double E) : E(E) {
     }
 
-    double getW(const Symbol &y, const Symbol &c, int n, int k) const;
+    Message Gauss(const Message &c, int n, int k) const;
 
-    Message Gauss(const Message &c, int n, int k);
-
-    double getSigma(int n, int k) const;
+    [[nodiscard]] double getSigma(int n, int k) const;
 };
