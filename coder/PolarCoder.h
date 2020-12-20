@@ -17,6 +17,8 @@ public:
 
     static Matrix<Symbol> getGN(int n);
 
+    static Message getWord(std::set<size_t> const &indices, Message const &frozen, Message const &u);
+
 private:
     const static Matrix<Symbol> F;
     const static Matrix<Symbol> I2;

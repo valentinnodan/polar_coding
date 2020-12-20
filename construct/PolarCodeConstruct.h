@@ -19,11 +19,6 @@ public:
     std::set<size_t> construct(size_t n, size_t k) {
         auto v = getZ(n);
 
-        for (size_t i = 0; i < n; i++) {
-            std::cout << v[i] << " ";
-        }
-        std::cout << '\n';
-
         std::vector<size_t> idx(n);
         for (size_t i = 0; i < n; i++) {
             idx[i] = i;

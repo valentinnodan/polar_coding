@@ -6,6 +6,7 @@
 
 #include <cmath>
 #include <vector>
+#include <iostream>
 #include "Symbol.h"
 
 inline std::vector<size_t> genReversedIndex(size_t i) {
@@ -29,4 +30,20 @@ inline std::pair<Message, Message> getOddsEvens(Message u) {
         resOddEvens.emplace_back((int) (u[i].symbol + u[i - 1].symbol) % 2);
     }
     return std::pair<Message, Message>(resOddEvens, resEvens);
+}
+
+inline void printWord(Message const &cW) {
+    std::cout << "Word:    ";
+    for (size_t i = 0; i < cW.size(); ++i) {
+        std::cout << cW[i];
+    }
+    std::cout << "\n";
+}
+
+inline Message getRandomWord(size_t length) {
+    auto res = Message(length);
+    for (size_t i = 0; i < length; ++i) {
+        res[i].symbol = rand() % 2;
+    }
+    return res;
 }
