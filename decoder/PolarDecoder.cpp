@@ -9,35 +9,33 @@
 
 Message
 PolarDecoder::decode(Message const &y, std::set<size_t> const &indices,
-                     Message const &frozen, size_t N, size_t K) const {
+                     Message const &frozen, std::vector<size_t> const &reversedIndexes, size_t N, size_t K) const {
     size_t n = y.size();
     size_t nn = log2(n);
 
-    auto revInd = genReversedIndex(y.size());
     auto revPlace = std::vector<size_t>(n);
     for (size_t i = 0; i < n; i++) {
-        revPlace[revInd[i]] = i;
+        revPlace[reversedIndexes[i]] = i;
     }
 
-    auto lN = Matrix<std::pair<Message, double>>(n, nn + 1, std::pair<Message, double>(Message(), -1));
+    auto s = myChannel.getSigma(N, K);
+    auto lN = Matrix<double>(n, nn + 1, -1);
     for (size_t i = 0; i < n; ++i) {
-        lN[i][nn] = std::pair<Message, double>(Message(),  2 * y[i].symbol / myChannel.getSigma(N, K));
+        lN[i][nn] = 2 * y[i].symbol / s;
     }
 
-    auto uI = Message();
     auto res = Message(y.size());
     size_t currFrozenInd = 0;
     for (size_t i = 0; i < y.size(); i++) {
         Symbol currU{0};
         if (indices.count(i) == 0) {
-            h(uI, lN, revPlace[i]);
+            h(res, i, lN, revPlace[i]);
             currU = frozen[currFrozenInd++];
             res[i] = currU;
         } else {
-            currU = h(uI, lN, revPlace[i]);
+            currU = h(res, i, lN, revPlace[i]);
             res[i] = currU;
         }
-        uI.push_back(currU);
     }
 //    for (size_t i = 0 ; i< n; ++i) {
 //        for (size_t j = 0; j < nn + 1; ++j) {
@@ -52,8 +50,8 @@ PolarDecoder::decode(Message const &y, std::set<size_t> const &indices,
     return res;
 }
 
-Symbol PolarDecoder::h(Message const &u, Matrix<std::pair<Message, double>> &lN, size_t placeL) const {
-    const double lNI = getLNRec(lN, placeL, 0, u);
+Symbol PolarDecoder::h(Message const &u, size_t uLength, Matrix<double> &lN, size_t placeL) const {
+    const double lNI = getLNRec(lN, placeL, 0, u, uLength);
     if (lNI >= 0) {
         return SymbolConsts::ZERO;
     }
@@ -61,42 +59,42 @@ Symbol PolarDecoder::h(Message const &u, Matrix<std::pair<Message, double>> &lN,
 }
 
 
-double PolarDecoder::getLNRec(Matrix<std::pair<Message, double>> &lN, size_t i, size_t j, Message const & u) const {
+double PolarDecoder::getLNRec(Matrix<double> &lN, size_t i, size_t j, Message const &u, size_t uLength) const {
     if (j < lN.width - 1) {
         int sign = 1;
         uint64_t step = lN.height / (1ul << (j + 1));
         if (i % (step * 2) >= step) {
             sign = -1;
         }
-        lN[i][j].first = u;
-        std::pair<Message, double> neighbour = lN[i][j + 1];
-        std::pair<Message, double> otherNeighbour = lN[i + sign * step][j + 1];
-        auto pairMessages = getOddsEvens(u);
+        double neighbour = lN[i][j + 1];
+        double otherNeighbour = lN[i + sign * step][j + 1];
+        auto pairMessages = getOddsEvens(u, uLength);
+        Message neighbourU, otherNeighbourU;
         if (sign > 0) {
-            otherNeighbour.first = pairMessages.second;
-            neighbour.first = pairMessages.first;
+            otherNeighbourU = pairMessages.second;
+            neighbourU = pairMessages.first;
         } else {
-            otherNeighbour.first = pairMessages.first;
-            neighbour.first = pairMessages.second;
+            otherNeighbourU = pairMessages.first;
+            neighbourU = pairMessages.second;
         }
-        if (neighbour.second == -1) {
-            neighbour.second = getLNRec(lN, i, j + 1, neighbour.first);
+        if (neighbour == -1) {
+            neighbour = getLNRec(lN, i, j + 1, neighbourU, neighbourU.size());
         }
-        if (otherNeighbour.second == -1) {
-            otherNeighbour.second = getLNRec(lN, i + sign * step, j + 1, otherNeighbour.first);
+        if (otherNeighbour == -1) {
+            otherNeighbour = getLNRec(lN, i + sign * step, j + 1, otherNeighbourU, otherNeighbourU.size());
         }
-        if (lN[i][j].first.size() % 2 == 0) {
-            double d = (std::min(std::abs(neighbour.second), std::abs(otherNeighbour.second)));
-            lN[i][j].second = (neighbour.second * otherNeighbour.second) > 0 ? d : d * (-1);
+        if (uLength % 2 == 0) {
+            double d = (std::min(std::abs(neighbour), std::abs(otherNeighbour)));
+            lN[i][j] = (neighbour * otherNeighbour) > 0 ? d : d * (-1);
         } else {
             if (sign > 0) {
-                lN[i][j].second = neighbour.second * (1 - 2 * u[u.size() - 1].symbol) +otherNeighbour.second ;
+                lN[i][j] = neighbour * (1 - 2 * u[uLength - 1].symbol) + otherNeighbour;
             } else {
-                lN[i][j].second = otherNeighbour.second * (1 - 2 * u[u.size() - 1].symbol) + neighbour.second;
+                lN[i][j] = otherNeighbour * (1 - 2 * u[uLength - 1].symbol) + neighbour;
             }
         }
-        return lN[i][j].second;
+        return lN[i][j];
     } else {
-        return lN[i][j].second;
+        return lN[i][j];
     }
 }

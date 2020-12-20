@@ -13,7 +13,7 @@
 
 class PolarCoder {
 public:
-    static Message encode(Message const &u, std::set<size_t> const &indices, Message const &frozen);
+    static Message encode(Message const &u, std::set<size_t> const &indices, Message const &frozen, std::vector<size_t> const & reversedIndexes);
 
     static Matrix<Symbol> getGN(int n);
 

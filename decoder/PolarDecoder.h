@@ -17,12 +17,12 @@ public:
     explicit PolarDecoder(Channel const &m) : myChannel(m) {
     }
 
-    Message decode(Message const &y, std::set<size_t> const &indices, Message const &frozen, size_t N, size_t K) const;
+    Message decode(Message const &y, std::set<size_t> const &indices, Message const &frozen, std::vector<size_t> const & reversedIndexes, size_t N, size_t K) const;
 
 private:
-    Symbol h(Message const &u, Matrix<std::pair<Message, double>> &lN, size_t placeL) const;
+    Symbol h(Message const &u, size_t uLength, Matrix<double> &lN, size_t placeL) const;
 
-    double getLNRec(Matrix<std::pair<Message, double>> &lN, size_t i, size_t j, Message const &u) const;
+    double getLNRec(Matrix<double> &lN, size_t i, size_t j, Message const &u, size_t uLength) const;
 
     Channel myChannel;
 };

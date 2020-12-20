@@ -15,12 +15,11 @@ Matrix<Symbol> PolarCoder::getFN(int n) {
 }
 
 Message PolarCoder::encode(Message const &u, std::set<size_t> const &indices,
-                           Message const &frozen) {
+                           Message const &frozen, std::vector<size_t> const & reversedIndexes) {
     size_t n = indices.size() + frozen.size();
     size_t nn = log2(n) + 1;
     auto word = getWord(indices, frozen, u);
     auto codingMatrix = Matrix<Symbol>(n, nn);
-    auto t = genReversedIndex(n);
     for (size_t i = 0; i < n; i++) {
         codingMatrix[i][0] = word[i];
     }
@@ -37,7 +36,7 @@ Message PolarCoder::encode(Message const &u, std::set<size_t> const &indices,
     }
     auto codeWordRes = Message(n);
     for (size_t i = 0; i < n; i++) {
-        codeWordRes[i] = codingMatrix[t[i]][nn - 1];
+        codeWordRes[i] = codingMatrix[reversedIndexes[i]][nn - 1];
     }
     return codeWordRes;
 }

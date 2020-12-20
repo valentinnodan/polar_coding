@@ -7,30 +7,30 @@
 int main() {
 
     double becProbability = 0.5;
-    size_t N = 8;
-    size_t K = 4;
+    size_t N = 1024;
+    size_t K = 512;
+    const size_t wordsAmount = 1000;
     auto frozen = Message(N - K);
 
     auto cPC = PolarCodeConstruct(becProbability);
     auto A = cPC.construct(N, K);
 
-    for (int i = 0; i < 11; i++) {
-        auto myMsg = getRandomWord(K);
-        const auto cW = PolarCoder::encode(myMsg, A, frozen);
-        auto word = PolarCoder::getWord(A, frozen, myMsg);
+    auto reversedIndexes = genReversedIndex(N);
+    for (size_t i = 0; i < 11; i++) {
         auto gaussianChannel = Channel(i);
         const auto decoder = PolarDecoder(gaussianChannel);
-        auto gaussWord = gaussianChannel.Gauss(cW, N, K);
-        auto decodedWord = decoder.decode(gaussWord, A, frozen, N, K);
-        std::cout << "Decoded word error: ";
         int e = 0;
-        for (size_t j = 0; j < N; ++j) {
-            double diff = decodedWord[j].symbol - word[j].symbol;
-            if (std::abs(diff) > 0.1) {
-                e++;
-            }
+        for (size_t j = 0; j < wordsAmount; j++) {
+            auto myMsg = getRandomWord(K);
+            const auto cW = PolarCoder::encode(myMsg, A, frozen, reversedIndexes);
+//            std::cout << "encode" << std::endl;
+            auto word = PolarCoder::getWord(A, frozen, myMsg);
+            auto gaussWord = gaussianChannel.Gauss(cW, N, K);
+            auto decodedWord = decoder.decode(gaussWord, A, frozen, reversedIndexes, N, K);
+//            std::cout << "decode" << std::endl;
+            e += compareWords(decodedWord, word);
         }
-        std::cout << " " << e << " Eb_N0: " << i << std::endl;
+        std::cout << "Decoded word error:  " << (double) e / (wordsAmount * N) << " Eb_N0: " << (double) i / 2 << std::endl;
     }
 
     return 0;

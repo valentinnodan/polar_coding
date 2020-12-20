@@ -22,12 +22,13 @@ inline std::vector<size_t> genReversedIndex(size_t i) {
     return res;
 }
 
-inline std::pair<Message, Message> getOddsEvens(Message u) {
-    auto resEvens = std::vector<Symbol>();
-    auto resOddEvens = std::vector<Symbol>();
-    for (size_t i = 1; i < u.size(); i += 2) {
-        resEvens.push_back(u[i]);
-        resOddEvens.emplace_back((int) (u[i].symbol + u[i - 1].symbol) % 2);
+inline std::pair<Message, Message> getOddsEvens(Message u, size_t uLength) {
+    auto resEvens = std::vector<Symbol>(uLength / 2);
+    auto resOddEvens = std::vector<Symbol>(uLength / 2);
+    for (size_t i = 1; i < uLength; i += 2) {
+        auto ind = (i - 1) / 2;
+        resEvens[ind] = u[i];
+        resOddEvens[ind].symbol = (int) (u[i].symbol + u[i - 1].symbol) % 2;
     }
     return std::pair<Message, Message>(resOddEvens, resEvens);
 }
@@ -44,6 +45,18 @@ inline Message getRandomWord(size_t length) {
     auto res = Message(length);
     for (size_t i = 0; i < length; ++i) {
         res[i].symbol = rand() % 2;
+    }
+    return res;
+}
+
+inline int compareWords(Message const & a, Message const & b) {
+    assert(a.size() == b.size());
+    int res = 0;
+    for (size_t j = 0; j < a.size(); ++j) {
+        double diff = a[j].symbol - b[j].symbol;
+        if (std::abs(diff) > Symbol::EPS) {
+            res++;
+        }
     }
     return res;
 }
