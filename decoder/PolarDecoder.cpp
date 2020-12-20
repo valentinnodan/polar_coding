@@ -21,7 +21,7 @@ PolarDecoder::decode(Message const &y, std::set<size_t> const &indices,
 
     auto lN = Matrix<std::pair<Message, double>>(n, nn + 1, std::pair<Message, double>(Message(), -1));
     for (size_t i = 0; i < n; ++i) {
-        lN[i][nn] = std::pair<Message, double>(Message(),  y[i].symbol / myChannel.getSigma(N, K));
+        lN[i][nn] = std::pair<Message, double>(Message(),  2 * y[i].symbol / myChannel.getSigma(N, K));
     }
 
     auto uI = Message();
@@ -30,29 +30,29 @@ PolarDecoder::decode(Message const &y, std::set<size_t> const &indices,
     for (size_t i = 0; i < y.size(); i++) {
         Symbol currU{0};
         if (indices.count(i) == 0) {
-            h(y, uI, lN, revPlace[i]);
+            h(uI, lN, revPlace[i]);
             currU = frozen[currFrozenInd++];
             res[i] = currU;
         } else {
-            currU = h(y, uI, lN, revPlace[i]);
+            currU = h(uI, lN, revPlace[i]);
             res[i] = currU;
         }
         uI.push_back(currU);
     }
-    for (size_t i = 0 ; i< n; ++i) {
-        for (size_t j = 0; j < nn + 1; ++j) {
-            std::cout << "("<< lN[i][j].second  << ", ";
-            for (Symbol c: lN[i][j].first) {
-                std::cout << c;
-            }
-            std::cout << ")      ";
-        }
-        std::cout << std::endl;
-    }
+//    for (size_t i = 0 ; i< n; ++i) {
+//        for (size_t j = 0; j < nn + 1; ++j) {
+//            std::cout << "("<< lN[i][j].second  << ", ";
+//            for (Symbol c: lN[i][j].first) {
+//                std::cout << c;
+//            }
+//            std::cout << ")      ";
+//        }
+//        std::cout << std::endl;
+//    }
     return res;
 }
 
-Symbol PolarDecoder::h(Message const &y, Message const &u, Matrix<std::pair<Message, double>> &lN, size_t placeL) const {
+Symbol PolarDecoder::h(Message const &u, Matrix<std::pair<Message, double>> &lN, size_t placeL) const {
     const double lNI = getLNRec(lN, placeL, 0, u);
     if (lNI >= 0) {
         return SymbolConsts::ZERO;
@@ -90,9 +90,9 @@ double PolarDecoder::getLNRec(Matrix<std::pair<Message, double>> &lN, size_t i, 
             lN[i][j].second = (neighbour.second * otherNeighbour.second) > 0 ? d : d * (-1);
         } else {
             if (sign > 0) {
-                lN[i][j].second = otherNeighbour.second * (1 - 2 * u[u.size() - 1].symbol) + neighbour.second;
+                lN[i][j].second = neighbour.second * (1 - 2 * u[u.size() - 1].symbol) +otherNeighbour.second ;
             } else {
-                lN[i][j].second = neighbour.second * (1 - 2 * u[u.size() - 1].symbol) + otherNeighbour.second;
+                lN[i][j].second = otherNeighbour.second * (1 - 2 * u[u.size() - 1].symbol) + neighbour.second;
             }
         }
         return lN[i][j].second;
