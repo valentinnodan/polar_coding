@@ -19,34 +19,21 @@ PolarDecoder::decode(Message const &y, std::set<size_t> const &indices,
     }
 
     auto s = myChannel.getSigma(N, K);
-    auto lN = Matrix<double>(n, nn + 1, -1);
+    auto lN = Matrix<double>(n, nn + 1, NAN);
     for (size_t i = 0; i < n; ++i) {
         lN[i][nn] = 2 * y[i].symbol / s;
     }
 
     auto res = Message(y.size());
     size_t currFrozenInd = 0;
+    Symbol currU{0};
     for (size_t i = 0; i < y.size(); i++) {
-        Symbol currU{0};
+        currU = h(res, i, lN, revPlace[i]);
         if (indices.count(i) == 0) {
-            h(res, i, lN, revPlace[i]);
             currU = frozen[currFrozenInd++];
-            res[i] = currU;
-        } else {
-            currU = h(res, i, lN, revPlace[i]);
-            res[i] = currU;
         }
+        res[i] = currU;
     }
-//    for (size_t i = 0 ; i< n; ++i) {
-//        for (size_t j = 0; j < nn + 1; ++j) {
-//            std::cout << "("<< lN[i][j].second  << ", ";
-//            for (Symbol c: lN[i][j].first) {
-//                std::cout << c;
-//            }
-//            std::cout << ")      ";
-//        }
-//        std::cout << std::endl;
-//    }
     return res;
 }
 
@@ -60,41 +47,28 @@ Symbol PolarDecoder::h(Message const &u, size_t uLength, Matrix<double> &lN, siz
 
 
 double PolarDecoder::getLNRec(Matrix<double> &lN, size_t i, size_t j, Message const &u, size_t uLength) const {
-    if (j < lN.width - 1) {
-        int sign = 1;
-        uint64_t step = lN.height / (1ul << (j + 1));
-        if (i % (step * 2) >= step) {
-            sign = -1;
-        }
-        double neighbour = lN[i][j + 1];
-        double otherNeighbour = lN[i + sign * step][j + 1];
-        auto pairMessages = getOddsEvens(u, uLength);
-        Message neighbourU, otherNeighbourU;
-        if (sign > 0) {
-            otherNeighbourU = pairMessages.second;
-            neighbourU = pairMessages.first;
-        } else {
-            otherNeighbourU = pairMessages.first;
-            neighbourU = pairMessages.second;
-        }
-        if (neighbour == -1) {
-            neighbour = getLNRec(lN, i, j + 1, neighbourU, neighbourU.size());
-        }
-        if (otherNeighbour == -1) {
-            otherNeighbour = getLNRec(lN, i + sign * step, j + 1, otherNeighbourU, otherNeighbourU.size());
-        }
-        if (uLength % 2 == 0) {
-            double d = (std::min(std::abs(neighbour), std::abs(otherNeighbour)));
-            lN[i][j] = (neighbour * otherNeighbour) > 0 ? d : d * (-1);
-        } else {
-            if (sign > 0) {
-                lN[i][j] = neighbour * (1 - 2 * u[uLength - 1].symbol) + otherNeighbour;
-            } else {
-                lN[i][j] = otherNeighbour * (1 - 2 * u[uLength - 1].symbol) + neighbour;
-            }
-        }
-        return lN[i][j];
-    } else {
+    if (!isnanf(lN[i][j]))  {
         return lN[i][j];
     }
+    size_t upperNeighbourInd, lowerNeighbourInd;
+    uint64_t step = lN.height / (1ul << (j + 1));
+    if (i % (step * 2) >= step) {
+        upperNeighbourInd = i - step;
+        lowerNeighbourInd = i;
+    } else {
+        upperNeighbourInd = i;
+        lowerNeighbourInd = i + step;
+    }
+    auto pairMessages = getOddsEvens(u, uLength);
+    Message neighbourU, otherNeighbourU;
+    double upper = getLNRec(lN, upperNeighbourInd, j + 1, pairMessages.first, pairMessages.first.size());
+    double lower = getLNRec(lN, lowerNeighbourInd, j + 1, pairMessages.second, pairMessages.second.size());
+    if (uLength % 2 == 0) {
+        double d = (std::min(std::abs(lower), std::abs(upper)));
+        lN[i][j] = (lower * upper) > 0 ? d : d * (-1);
+    } else {
+        lN[i][j] = upper * (1 - 2 * u[uLength - 1].symbol) + lower;
+    }
+
+    return lN[i][j];
 }

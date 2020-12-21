@@ -24,13 +24,13 @@ Message PolarCoder::encode(Message const &u, std::set<size_t> const &indices,
         codingMatrix[i][0] = word[i];
     }
     for (size_t i = 1; i < nn; i++) {
+        size_t step = n / (1ull << (i));
         for (size_t j = 0; j < n; j++) {
-            size_t step = n / (1ull << (i));
             if (j % (step * 2) >= step) {
                 codingMatrix[j][i] = codingMatrix[j][i - 1];
             } else {
                 codingMatrix[j][i].symbol = (
-                        (int) (codingMatrix[j][i - 1].symbol + codingMatrix[j + step][i - 1].symbol) % 2);
+                        static_cast<int>(codingMatrix[j][i - 1].symbol + codingMatrix[j + step][i - 1].symbol) % 2);
             }
         }
     }
