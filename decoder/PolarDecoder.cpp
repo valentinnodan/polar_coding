@@ -4,71 +4,106 @@
 
 #include <cmath>
 #include <polar_utils.h>
-#include <iostream>
+#include <chrono>
 #include "PolarDecoder.h"
 
 Message
 PolarDecoder::decode(Message const &y, std::set<size_t> const &indices,
-                     Message const &frozen, std::vector<size_t> const &reversedIndexes, size_t N, size_t K) const {
+                     Message const &frozen, std::vector<size_t> const &revPlace, size_t N, size_t K) const {
     size_t n = y.size();
     size_t nn = log2(n);
 
-    auto revPlace = std::vector<size_t>(n);
-    for (size_t i = 0; i < n; i++) {
-        revPlace[reversedIndexes[i]] = i;
-    }
-
     auto s = myChannel.getSigma(N, K);
     auto lN = Matrix<double>(n, nn + 1, NAN);
+    auto uN = Matrix<double>(n, nn + 1, NAN);
     for (size_t i = 0; i < n; ++i) {
-        lN[i][nn] = 2 * y[i].symbol / s;
+        lN[i][0] = 2 * y[i].symbol / s;
     }
 
-    auto res = Message(y.size());
+    auto res = Message();
+    res.reserve(n);
     size_t currFrozenInd = 0;
     Symbol currU{0};
-    for (size_t i = 0; i < y.size(); i++) {
-        currU = h(res, i, lN, revPlace[i]);
+    for (size_t i = 0; i < n; i++) {
+        const double lNI = getLNRec(lN, uN, i, nn);
         if (indices.count(i) == 0) {
             currU = frozen[currFrozenInd++];
+        } else {
+            if (lNI >= 0) {
+                currU = SymbolConsts::ZERO;
+            } else {
+                currU = SymbolConsts::ONE;
+            }
         }
-        res[i] = currU;
+        res.push_back(currU);
+        updateUNRec(uN, currU, i, nn);
+//        for (size_t i = 0; i < n; i++) {
+//            for (size_t j = 0; j < nn + 1; j++) {
+//                std::cout << uN[i][nn - j] << " ";
+//            }
+//            std::cout << std::endl;
+//        }
+//        std::cout << std::endl;
     }
+//    for (size_t i = 0; i < n; i++) {
+//        for (size_t j = 0; j < nn + 1; j++) {
+//            std::cout << uN[i][nn - j] << " ";
+//        }
+//        std::cout << std::endl;
+//    }
+//    std::cout << std::endl;
+//    for (size_t i = 0; i < n; i++) {
+//        for (size_t j = 0; j < nn + 1; j++) {
+//            std::cout << lN[i][nn - j] << " ";
+//        }
+//        std::cout << std::endl;
+//    }
+//    std::cout << std::endl;
     return res;
 }
 
-Symbol PolarDecoder::h(Message const &u, size_t uLength, Matrix<double> &lN, size_t placeL) const {
-    const double lNI = getLNRec(lN, placeL, 0, u, uLength);
-    if (lNI >= 0) {
-        return SymbolConsts::ZERO;
-    }
-    return SymbolConsts::ONE;
-}
 
-
-double PolarDecoder::getLNRec(Matrix<double> &lN, size_t i, size_t j, Message const &u, size_t uLength) const {
-    if (!isnanf(lN[i][j]))  {
+double
+PolarDecoder::getLNRec(Matrix<double> &lN, Matrix<double> const &uN, size_t i, size_t j) const {
+    if (!isnanf(lN[i][j])) {
         return lN[i][j];
     }
-    size_t upperNeighbourInd, lowerNeighbourInd;
-    uint64_t step = lN.height / (1ul << (j + 1));
-    if (i % (step * 2) >= step) {
-        upperNeighbourInd = i - step;
-        lowerNeighbourInd = i;
-    } else {
-        upperNeighbourInd = i;
-        lowerNeighbourInd = i + step;
-    }
-    auto pairMessages = getOddsEvens(u, uLength);
-    Message neighbourU, otherNeighbourU;
-    double upper = getLNRec(lN, upperNeighbourInd, j + 1, pairMessages.first, pairMessages.first.size());
-    double lower = getLNRec(lN, lowerNeighbourInd, j + 1, pairMessages.second, pairMessages.second.size());
-    if (uLength % 2 == 0) {
+    size_t upperNeighbourInd;
+    size_t lowerNeighbourInd;
+    size_t curr_i = i / 2;
+    uint64_t step = curr_i % (1ul << (j - 1));
+    upperNeighbourInd = 2 * curr_i - step;
+    lowerNeighbourInd = (1ul << (j - 1)) + 2 * curr_i - step;
+//    std::cout << "("<<i<<", "<<j << ") "<< " : " << upperNeighbourInd << ", " << lowerNeighbourInd << std::endl;
+    double upper = getLNRec(lN, uN, upperNeighbourInd, j - 1);
+    double lower = getLNRec(lN, uN, lowerNeighbourInd, j - 1);
+    if (i % 2 == 0) {
         double d = (std::min(std::abs(lower), std::abs(upper)));
         lN[i][j] = (lower * upper) > 0 ? d : d * (-1);
     } else {
-        lN[i][j] = upper * (1 - 2 * u[uLength - 1].symbol) + lower;
+//        std::cout << "uN[" << 2 * curr_i << "][" << j << "] = " << uN[2 * curr_i][j] << std::endl;
+        lN[i][j] = upper * (1 - 2 * uN[2 * curr_i][j]) + lower;
     }
 
     return lN[i][j];
+}
+
+void PolarDecoder::updateUNRec(Matrix<double> &uN, Symbol bit, size_t ind, size_t s) const {
+
+    if (s > 0) {
+        uN[ind][s] = bit.symbol;
+        size_t curr_i = ind / 2;
+        uint64_t step = curr_i % (1ul << (s - 1));
+        size_t upperNeighbourInd = 2 * curr_i - step;
+        size_t lowerNeighbourInd = (1ul << (s - 1)) + 2 * curr_i - step;
+        double upperBit;
+        if (!isnanf(uN[2*curr_i][s]) && !isnanf(uN[2*curr_i][s])) {
+            upperBit = (int) (uN[2 * curr_i][s] + uN[2 * curr_i + 1][s]) % 2;
+            updateUNRec(uN, Symbol(upperBit), upperNeighbourInd, s - 1);
+        }
+        double lowerBit = uN[2 * curr_i + 1][s];
+        if (!isnanf(lowerBit)){
+            updateUNRec(uN, Symbol(lowerBit), lowerNeighbourInd, s - 1);
+        }
+    }
 }

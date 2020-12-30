@@ -22,7 +22,7 @@ inline std::vector<size_t> genReversedIndex(size_t i) {
     return res;
 }
 
-inline std::pair<Message, Message> getOddsEvens(Message u, size_t uLength) {
+inline std::pair<Message, Message> getOddsEvens(Message const &u, size_t uLength) {
     auto resEvens = std::vector<Symbol>(uLength / 2);
     auto resOddEvens = std::vector<Symbol>(uLength / 2);
     for (size_t i = 1; i < uLength; i += 2) {
@@ -49,7 +49,7 @@ inline Message getRandomWord(size_t length) {
     return res;
 }
 
-inline int compareWords(Message const & a, Message const & b) {
+inline int compareWords(Message const &a, Message const &b) {
     assert(a.size() == b.size());
     int res = 0;
     for (size_t j = 0; j < a.size(); ++j) {
