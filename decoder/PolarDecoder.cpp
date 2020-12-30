@@ -74,14 +74,12 @@ PolarDecoder::getLNRec(Matrix<double> &lN, Matrix<double> const &uN, size_t i, s
     uint64_t step = curr_i % (1ul << (j - 1));
     upperNeighbourInd = 2 * curr_i - step;
     lowerNeighbourInd = (1ul << (j - 1)) + 2 * curr_i - step;
-//    std::cout << "("<<i<<", "<<j << ") "<< " : " << upperNeighbourInd << ", " << lowerNeighbourInd << std::endl;
     double upper = getLNRec(lN, uN, upperNeighbourInd, j - 1);
     double lower = getLNRec(lN, uN, lowerNeighbourInd, j - 1);
     if (i % 2 == 0) {
         double d = (std::min(std::abs(lower), std::abs(upper)));
         lN[i][j] = (lower * upper) > 0 ? d : d * (-1);
     } else {
-//        std::cout << "uN[" << 2 * curr_i << "][" << j << "] = " << uN[2 * curr_i][j] << std::endl;
         lN[i][j] = upper * (1 - 2 * uN[2 * curr_i][j]) + lower;
     }
 
@@ -97,7 +95,7 @@ void PolarDecoder::updateUNRec(Matrix<double> &uN, Symbol bit, size_t ind, size_
         size_t upperNeighbourInd = 2 * curr_i - step;
         size_t lowerNeighbourInd = (1ul << (s - 1)) + 2 * curr_i - step;
         double upperBit;
-        if (!isnanf(uN[2*curr_i][s]) && !isnanf(uN[2*curr_i][s])) {
+        if (!isnanf(uN[2*curr_i][s]) && !isnanf(uN[2*curr_i + 1][s])) {
             upperBit = (int) (uN[2 * curr_i][s] + uN[2 * curr_i + 1][s]) % 2;
             updateUNRec(uN, Symbol(upperBit), upperNeighbourInd, s - 1);
         }

@@ -38,31 +38,20 @@ int main() {
 
             auto word = PolarCoder::getWord(A, frozen, myMsg);
             auto gaussWord = gaussianChannel.Gauss(cW, N, K);
-//            std::cout << "Sent";
-//            printWord(word);
-//            printWord(cW);
-//            for (size_t i = 0; i < N; i++) {
-//                std::cout << gaussWord[i].symbol << " ";
-//            }
-//            std::cout << std::endl;
 
             begin = std::chrono::high_resolution_clock::now();
             auto decodedWord = decoder.decode(gaussWord, A, frozen, revPlace, N, K);
             end = std::chrono::high_resolution_clock::now();
             totalDecoder += std::chrono::duration_cast<std::chrono::microseconds>(end - begin);
-//            std::cout << "decode" << ' ' << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count()
-//                      << "[µs]" << std::endl;
             e += compareWords(decodedWord, word);
-//            std::cout << "Decoded";
-//            printWord(decodedWord);
         }
         std::cout << "Decoded word error:  " << (double) e / (wordsAmount * N) << " Eb_N0: " << (double) i / 2
                   << std::endl;
 
     }
 
-    std::cout << "Total encoder time: " << totalEncoder.count() << " microseconds" << std::endl;
-    std::cout << "Total decoder time: " << totalDecoder.count() << " microseconds" << std::endl;
+//    std::cout << "Total encoder time: " << totalEncoder.count() << " microseconds" << std::endl;
+//    std::cout << "Total decoder time: " << totalDecoder.count() << " microseconds" << std::endl;
 
     return 0;
 }
