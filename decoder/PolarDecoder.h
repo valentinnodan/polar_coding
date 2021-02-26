@@ -17,12 +17,13 @@ public:
     explicit PolarDecoder(Channel const &m) : myChannel(m) {
     }
 
-    Message decode(Message const &y, std::set<size_t> const &indices, Message const &frozen,
+    virtual Message decode(Message const &y, std::set<size_t> const &indices, Message const &frozen,
                    std::vector<size_t> const &reversedIndexes, size_t N, size_t K) const;
 
-private:
-
+protected:
     Channel myChannel;
+
+private:
 
     void updateUNRec(Matrix<double> & uN, Symbol bit, size_t ind, size_t s) const;
 

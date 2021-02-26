@@ -36,7 +36,7 @@ inline std::pair<Message, Message> getOddsEvens(Message const &u, size_t uLength
 inline void printWord(Message const &cW) {
     std::cout << "Word:    ";
     for (size_t i = 0; i < cW.size(); ++i) {
-        std::cout << cW[i];
+        std::cout << cW[i] << " ";
     }
     std::cout << "\n";
 }
