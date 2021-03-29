@@ -16,5 +16,16 @@ add_executable(PolarCoding main.cpp
         construct/PolarCodeConstruct.cpp
         construct/PolarCodeConstruct.h
         utils/polar_utils.h
-        utils/Matrix.h utils/Symbol.h channel/Channel.cpp channel/Channel.h decoder/PolarDecoderBP.cpp decoder/PolarDecoderBP.h)
+        utils/Matrix.h
+        utils/Symbol.h
+        channel/Channel.cpp
+        channel/Channel.h
+        decoder/PolarDecoderBP.cpp
+        decoder/PolarDecoderBP.h
+        ldpc/DecoderBP.cpp
+        ldpc/DecoderBP.h
+        Transform.h
+        ldpc/encode/LDPCCoder.cpp
+        ldpc/encode/LDPCCoder.h
+        ldpc/LDPCConstruct.h)
 target_link_libraries(PolarCoding -lpthread)
