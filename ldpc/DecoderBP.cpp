@@ -13,12 +13,13 @@ Message DecoderBP::decode(size_t n, size_t r, size_t needed, const std::vector<d
     auto l = Matrix<double>(r, n, 0);
     auto z = Matrix<double>(r, n, 0);
     for (size_t k = 0; k < iter; k++) {
-        for (size_t j = 0; j < r; j++) {
-            for (size_t i = 0; i < n; i++) {
+        for (size_t i = 0; i < n; i++) {
+            for (size_t j = 0; j < r; j++) {
+                l[j][i] = llr[i];
                 for (size_t h = 1; h <= c[i][0]; h++) {
                     size_t hh = c[i][h];
                     if (hh != j) {
-                        l[j][i] = llr[i] + z[hh][i];
+                        l[j][i] += z[hh][i];
                     }
                 }
             }
@@ -31,7 +32,7 @@ Message DecoderBP::decode(size_t n, size_t r, size_t needed, const std::vector<d
                 for (size_t h = 1; h <= v[jj][0]; h++) {
                     size_t hh = v[jj][h];
                     if (hh != i) {
-                        if (l[jj][hh] <= 0) {
+                        if (l[jj][hh] < 0) {
                             mul *= -1;
                         }
                         sum += f(std::abs(l[jj][hh]));
@@ -60,13 +61,13 @@ Message DecoderBP::decode(size_t n, size_t r, size_t needed, const std::vector<d
 }
 
 double DecoderBP::f(double x) const {
-    if (std::abs(x) > 40) {
+    if (std::abs(x) > 20) {
         return 0;
     }
-    if (std::abs(x) < 1e-16) {
+    if (std::abs(x) < 1e-12) {
         return std::numeric_limits<double>::infinity();
     }
-    double eX = exp(x);
+    double eX = exp(std::abs(x));
     return log((eX + 1) / (eX - 1));
 }
 

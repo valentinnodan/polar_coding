@@ -14,7 +14,7 @@ int main() {
 //    double becProbability = 0.5;
 //    size_t N = 4;
 //    size_t K = 1;
-    const size_t wordsAmount = 10000;
+    const size_t wordsAmount = 1000000;
 //    auto frozen = Message(N - K);
 //
 //    auto cPC = PolarCodeConstruct(becProbability);
@@ -100,20 +100,19 @@ int main() {
             for (size_t i1 = 0; i1 < N; ++i1) {
                 l[i1] = 2 * gaussWord[i1].symbol / s;
             }
-            auto res = decoder.decode(N, N - K, N, l, ss.second, ss.first, 15);
+            auto res = decoder.decode(N, N - K, N, l, ss.second, ss.first, 20);
 //            printWord(r);
 //            printWord(res);
 //            std::cout << j << std::endl;
-            if (j % 1000 == 0) {
-                std::cout << j << std::endl;
-            }
+//            if (j % 100 == 0) {
+//                std::cout << j << std::endl;
+//            }
             if (compareWords(res, r) > 0){
-//                std::cout << compareWords(res, r) << std::endl;
                 e += 1;
             }
 //            printWord(decodedWord);
         }
-        std::cout << "Decoded word error:  " << (double) e / (wordsAmount) << " Eb_N0: " << (double) i
+        std::cout <<  (double) e / (wordsAmount) << " " << (double) i
                   << std::endl;
 
     }

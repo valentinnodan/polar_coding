@@ -65,7 +65,7 @@ inline Matrix<int> transformToMatrix (std::pair<Matrix<size_t>,
     line >> number;
     r = stoi(number);
     in.close();
-    auto H = Matrix<int>(r, c, 0);
+    auto H = Matrix<int>(r, c, std::numeric_limits<int>::infinity());
     for (size_t i = 0; i < r; i++) {
         for (size_t j = 1; j <= sets.first[i][0]; j++) {
             size_t jj = sets.first[i][j];
