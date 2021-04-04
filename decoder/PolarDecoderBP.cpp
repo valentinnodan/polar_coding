@@ -5,7 +5,7 @@
 #include <iostream>
 #include "PolarDecoderBP.h"
 #include "../ldpc/DecoderBP.h"
-#include "../Transform.h"
+#include "Transform.h"
 
 
 //Message PolarDecoderBP::decode(const Message &y, const std::set<size_t> &indices, const Message &frozen,
@@ -52,21 +52,25 @@
 //}
 
 Message PolarDecoderBP::decode(const Message &y, const std::set<size_t> &indices, const Message &frozen,
-                               const std::vector<size_t> &reversedIndexes, size_t N, size_t K) const {
+                               const std::vector<size_t> &reversedIndexes, size_t N, size_t K, Matrix<int> const & H_LDPC_like) const {
     size_t n = y.size();
 
     auto s = myChannel.getSigma(N, K);
     auto l = std::vector<double>(n * (log2(n) + 1), 0);
     for (size_t i = 0; i < n; ++i) {
-        for (size_t j = 0; j < log2(n) + 1; j++) {
-            l[i + n * j] = 2 * y[i].symbol / s;
-        }
+//        std::cout << y[i] << " ";
+            l[i + n * log2(n)] = 2 * y[i].symbol / s;
+            if (indices.count(i) == 0){
+                l[i] = 1e100;
+            }
     }
-    auto H_LDPC_like = transform(n, indices);
+//    std::cout << std::endl;
     auto pair = DecoderBP::prepare(H_LDPC_like);
     auto decoderLDPC = DecoderBP();
-    return decoderLDPC.decode(H_LDPC_like.height, H_LDPC_like.width, n, l, pair.first, pair.second);
+    auto decodedWord = decoderLDPC.decode(H_LDPC_like.height, H_LDPC_like.width, n, l, pair.second, pair.first, 50);
+    return decodedWord;
 }
+
 
 
 void PolarDecoderBP::updateLR(Matrix<double> &l, Matrix<double> &r) const {

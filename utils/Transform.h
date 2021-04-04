@@ -7,7 +7,7 @@
 #include <Matrix.h>
 #include <set>
 #include <cmath>
-#include "coder/PolarCoder.h"
+#include "../coder/PolarCoder.h"
 
 inline Matrix<int> transform(size_t n, const std::set<size_t> &indices) {
     auto nn = log2(n);
@@ -17,6 +17,7 @@ inline Matrix<int> transform(size_t n, const std::set<size_t> &indices) {
         auto flags = std::vector<bool>(n, false);
         size_t ii = i + 1;
         size_t step = n / (1 << ii);
+        size_t walk = 0;
         for (size_t j = 0; j < n; j++) {
             if (!flags[j]) {
                 flags[j] = true;
@@ -27,10 +28,14 @@ inline Matrix<int> transform(size_t n, const std::set<size_t> &indices) {
                 H[vN1][cNInd] = 1;
                 H[vN2][cNInd] = 1;
                 H[vN1 + n][cNInd] = 1;
+                H[vN2][cNInd + step] = 1;
+                H[vN2 + n][cNInd + step] = 1;
                 cNInd += 1;
-                H[vN2][cNInd] = 1;
-                H[vN2 + n][cNInd] = 1;
-                cNInd += 1;
+                walk += 1;
+            }
+            if (walk == step) {
+                walk = 0;
+                cNInd += step;
             }
         }
     }

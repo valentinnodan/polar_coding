@@ -15,7 +15,7 @@ public:
     }
 
     Message decode(Message const &y, std::set<size_t> const &indices, Message const &frozen,
-                   std::vector<size_t> const &reversedIndexes, size_t N, size_t K) const;
+                   std::vector<size_t> const &reversedIndexes, size_t N, size_t K, Matrix<int> const & H_LDPC_like) const;
 
 
 private:

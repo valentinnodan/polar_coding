@@ -8,6 +8,7 @@
 #include <Symbol.h>
 #include <Matrix.h>
 #include <unordered_set>
+#include <set>
 
 class DecoderBP {
 

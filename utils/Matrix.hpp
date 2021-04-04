@@ -3,8 +3,6 @@
 //
 
 #include "Symbol.h"
-#include "Matrix.h"
-
 
 template<typename T>
 Matrix<T>::Matrix(size_t h, size_t w) : height(h), width(w), data(h * w) {

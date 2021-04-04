@@ -3,7 +3,7 @@ project(PolarCoding)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -Wextra")
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -mtune=native -fno-omit-frame-pointer -g")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -mtune=native -g")
 set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address,undefined -D_GLIBCXX_DEBUG")
 
 include_directories(utils)
@@ -24,7 +24,7 @@ add_executable(PolarCoding main.cpp
         decoder/PolarDecoderBP.h
         ldpc/DecoderBP.cpp
         ldpc/DecoderBP.h
-        Transform.h
+        utils/Transform.h
         ldpc/encode/LDPCCoder.cpp
         ldpc/encode/LDPCCoder.h
         ldpc/LDPCConstruct.h)
