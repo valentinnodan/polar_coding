@@ -11,17 +11,15 @@
 
 #include "Symbol.h"
 #include "../channel/Channel.h"
+#include "PolarDecoder.h"
 
-class PolarDecoder {
+class PolarDecoderSC: PolarDecoder {
 public:
-    explicit PolarDecoder(Channel const &m) : myChannel(m) {
+    explicit PolarDecoderSC(Channel const &m) : PolarDecoder(m) {
     }
 
-    virtual Message decode(Message const &y, std::set<size_t> const &indices, Message const &frozen,
-                   std::vector<size_t> const &reversedIndexes, size_t N, size_t K) const;
+    Message decode(Message const &y, std::set<size_t> const &indices, size_t N, size_t K) const;
 
-protected:
-    Channel myChannel;
 
 private:
 

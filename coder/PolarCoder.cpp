@@ -3,6 +3,7 @@
 //
 
 #include <iostream>
+#include <polar_utils.h>
 
 #include "PolarCoder.h"
 
@@ -17,8 +18,41 @@ Matrix<Symbol> PolarCoder::getFN(int n) {
 Message PolarCoder::encode(Message const &u, std::set<size_t> const &indices,
                            Message const &frozen, std::vector<size_t> const & reversedIndexes) {
     size_t n = indices.size() + frozen.size();
+    size_t nn = log2(n);
+    Message word;
+    if (u.size() == n) {
+        for (size_t i = 0; i < n; i++) {
+            word.emplace_back(u[i].symbol);
+        }
+    } else {
+        word = getWord(indices, frozen, u);
+    }
+    for (size_t i = 0; i < nn; i++) {
+        auto flags = std::vector<bool>(n, false);
+        size_t ii = i + 1;
+        size_t step = n / (1ul << ii);
+        for (size_t j = 0; j < n; j++) {
+            if (!flags[j]) {
+                word[j].symbol = static_cast<int>(word[j].symbol + word[j + step].symbol) % 2;
+                flags[j] = true;
+                flags[j + step] = true;
+            }
+        }
+    }
+    return word;
+}
+Message PolarCoder::encodeOld(Message const &u, std::set<size_t> const &indices,
+                              Message const &frozen, std::vector<size_t> const & reversedIndexes){
+    size_t n = indices.size() + frozen.size();
     size_t nn = log2(n) + 1;
-    auto word = getWord(indices, frozen, u);
+    Message word;
+    if (u.size() == n) {
+        for (size_t i = 0; i < n; i++) {
+            word.push_back(u[i]);
+        }
+    } else {
+        word = getWord(indices, frozen, u);
+    }
     auto codingMatrix = Matrix<Symbol>(n, nn);
     for (size_t i = 0; i < n; i++) {
         codingMatrix[i][0] = word[i];
@@ -74,14 +108,13 @@ Matrix<Symbol> PolarCoder::getGN(int n) {
 
 Message PolarCoder::getWord(std::set<size_t> const & A, Message const & frozen, Message const & u) {
     size_t myMsgInd = 0;
-    size_t frozenInd = 0;
     size_t n = u.size() + frozen.size();
     auto word = Message(n);
     for (size_t i = 0; i < n; ++i) {
         if (A.count(i) == 1) {
-            word[i] = u[myMsgInd];
+            word[i].symbol = u[myMsgInd++].symbol;
         } else {
-            word[i] = frozen[frozenInd];
+            word[i].symbol = Symbol(0).symbol;
         }
     }
     return word;

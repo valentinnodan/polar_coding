@@ -3,7 +3,6 @@
 //
 
 #include <polar_utils.h>
-#include <numeric>
 #include "LDPCCoder.h"
 
 Matrix<int> LDPCCoder::transformH(const Matrix<int> &H) {

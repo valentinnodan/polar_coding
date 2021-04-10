@@ -17,7 +17,7 @@ inline Matrix<int> transform(size_t n, const std::set<size_t> &indices) {
         auto flags = std::vector<bool>(n, false);
         size_t ii = i + 1;
         size_t step = n / (1 << ii);
-        size_t walk = 0;
+//        size_t walk = 0;
         for (size_t j = 0; j < n; j++) {
             if (!flags[j]) {
                 flags[j] = true;
@@ -28,30 +28,18 @@ inline Matrix<int> transform(size_t n, const std::set<size_t> &indices) {
                 H[vN1][cNInd] = 1;
                 H[vN2][cNInd] = 1;
                 H[vN1 + n][cNInd] = 1;
-                H[vN2][cNInd + step] = 1;
-                H[vN2 + n][cNInd + step] = 1;
+                cNInd++;
+                H[vN2][cNInd] = 1;
+                H[vN2 + n][cNInd] = 1;
                 cNInd += 1;
-                walk += 1;
+//                walk += 1;
             }
-            if (walk == step) {
-                walk = 0;
-                cNInd += step;
-            }
+//            if (walk == step) {
+//                walk = 0;
+//                cNInd += step;
+//            }
         }
     }
-    // sub size of indices
-//    std::cout << indices.size() << std::endl;
-//    auto resH = Matrix<int>(n * (nn + 1), indices.size());
-//    size_t ind = 0;
-//    for (size_t i = 0; i < n; i++) {
-//        if (indices.count(i) == 0) {
-//            continue;
-//        }
-//        for (size_t j = 0; j < n * (nn + 1); j++) {
-//            resH[j][ind] = H[j][i];
-//        }
-//    }
-//    std::cout << resH;
     return H;
 }
 

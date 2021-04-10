@@ -3,7 +3,6 @@
 //
 
 #include <cmath>
-#include <iostream>
 #include "DecoderBP.h"
 
 Message DecoderBP::decode(size_t n, size_t r, size_t needed, const std::vector<double> &llr,
@@ -14,21 +13,22 @@ Message DecoderBP::decode(size_t n, size_t r, size_t needed, const std::vector<d
     auto z = Matrix<double>(n, r, 0);
     for (size_t k = 0; k < iter; k++) {
         for (size_t i = 0; i < n; i++) {
-            std::fill(l[i], l[i] + r, llr[i]);
-            for (size_t j = 0; j < r; j++) {
-                for (size_t h = 1; h <= c[i][0]; h++) {
-                    size_t hh = c[i][h];
-                    if (hh != j) {
-                        l[i][j] += z[i][hh];
-                    }
-                }
+            double sumL = 0;
+            for (size_t h = 1; h <= c[i][0]; h++) {
+                size_t hh = c[i][h];
+                sumL += z[i][hh];
+            }
+            for (size_t j = 1; j <= c[i][0]; j++) {
+                size_t jj = c[i][j];
+                l[i][jj] = llr[i] + sumL - z[i][jj];
             }
         }
         for (size_t i = 0; i < n; i++) {
             for (size_t j = 1; j <= c[i][0]; j++) {
+                size_t jj = c[i][j];
+
                 int mul = 1;
                 double sum = 0;
-                size_t jj = c[i][j];
                 for (size_t h = 1; h <= v[jj][0]; h++) {
                     size_t hh = v[jj][h];
                     if (hh != i) {
@@ -36,23 +36,23 @@ Message DecoderBP::decode(size_t n, size_t r, size_t needed, const std::vector<d
                             mul *= -1;
                         }
                         sum += f(std::abs(l[hh][jj]));
+                        if (sum > 19.07) {
+                            break;
+                        }
                     }
                 }
-                z[i][jj] = std::max(std::min(mul * f(std::abs(sum)), 19.07), -19.07);
+                z[i][jj] = std::max(std::min(mul * f(sum), 19.07), -19.07);
+                assert(!std::isnan(z[i][jj]));
             }
         }
     }
 
-//    std::cout << l;
-//    std::cout << std::endl;
-//    std::cout << z;
 
     auto res = Message();
     for (size_t i = n - needed; i < n; i++) {
         double sum = 0;
-        for (size_t h = 1; h <= c[i][0]; h++) {
-            size_t hh = c[i][h];
-            sum += z[i][hh];
+        for (size_t h = 0; h < r; h++) {
+            sum += z[i][h];
         }
         if (llr[i] + sum < 0) {
             res.emplace_back(1);
@@ -61,17 +61,15 @@ Message DecoderBP::decode(size_t n, size_t r, size_t needed, const std::vector<d
         }
     }
     return res;
+
 }
 
 double DecoderBP::f(double x) const {
-    if (std::abs(x) > 20) {
+    if (std::abs(x) > 19.07) {
         return 0;
     }
-    if (std::abs(x) < 1e-12) {
-        return std::numeric_limits<double>::infinity();
-    }
     double eX = std::exp(std::abs(x));
-    return std::log((eX + 1) / (eX - 1));
+    return std::abs(std::log((eX + 1) / (eX - 1)));
 }
 
 std::pair<Matrix<size_t>,
@@ -86,14 +84,14 @@ std::pair<Matrix<size_t>,
             }
         }
     }
-    size_t j = 0;
-    Matrix<size_t> cc = Matrix<size_t>(h.width, 20, 0);
-    Matrix<size_t> vv = Matrix<size_t>(h.height, 20, 0);
+    size_t j;
+    Matrix<size_t> cc = Matrix<size_t>(h.width, 10, 0);
+    Matrix<size_t> vv = Matrix<size_t>(h.height, 10, 0);
     for (size_t i = 0; i < h.width; i++) {
         cc[i][0] = c[i].size();
         j = 1;
-        for (size_t h: c[i]) {
-            cc[i][j] = h;
+        for (size_t h1: c[i]) {
+            cc[i][j] = h1;
             j++;
         }
     }
@@ -101,8 +99,8 @@ std::pair<Matrix<size_t>,
     for (size_t i = 0; i < h.height; i++) {
         vv[i][0] = v[i].size();
         j = 1;
-        for (size_t h: v[i]) {
-            vv[i][j] = h;
+        for (size_t h1: v[i]) {
+            vv[i][j] = h1;
             j++;
         }
     }

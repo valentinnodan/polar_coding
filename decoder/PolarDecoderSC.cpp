@@ -5,11 +5,11 @@
 #include <cmath>
 #include <polar_utils.h>
 #include <chrono>
-#include "PolarDecoder.h"
+#include "PolarDecoderSC.h"
 
 Message
-PolarDecoder::decode(Message const &y, std::set<size_t> const &indices,
-                     Message const &frozen, std::vector<size_t> const &revPlace, size_t N, size_t K) const {
+PolarDecoderSC::decode(Message const &y, std::set<size_t> const &indices,
+                       size_t N, size_t K) const {
     size_t n = y.size();
     size_t nn = log2(n);
 
@@ -22,12 +22,11 @@ PolarDecoder::decode(Message const &y, std::set<size_t> const &indices,
 
     auto res = Message();
     res.reserve(n);
-    size_t currFrozenInd = 0;
     Symbol currU{0};
     for (size_t i = 0; i < n; i++) {
         const double lNI = getLNRec(lN, uN, i, nn);
         if (indices.count(i) == 0) {
-            currU = frozen[currFrozenInd++];
+            currU = SymbolConsts::ZERO;
         } else {
             if (lNI >= 0) {
                 currU = SymbolConsts::ZERO;
@@ -37,34 +36,13 @@ PolarDecoder::decode(Message const &y, std::set<size_t> const &indices,
         }
         res.push_back(currU);
         updateUNRec(uN, currU, i, nn);
-//        for (size_t i = 0; i < n; i++) {
-//            for (size_t j = 0; j < nn + 1; j++) {
-//                std::cout << uN[i][nn - j] << " ";
-//            }
-//            std::cout << std::endl;
-//        }
-//        std::cout << std::endl;
     }
-//    for (size_t i = 0; i < n; i++) {
-//        for (size_t j = 0; j < nn + 1; j++) {
-//            std::cout << uN[i][nn - j] << " ";
-//        }
-//        std::cout << std::endl;
-//    }
-//    std::cout << std::endl;
-//    for (size_t i = 0; i < n; i++) {
-//        for (size_t j = 0; j < nn + 1; j++) {
-//            std::cout << lN[i][nn - j] << " ";
-//        }
-//        std::cout << std::endl;
-//    }
-//    std::cout << std::endl;
     return res;
 }
 
 
 double
-PolarDecoder::getLNRec(Matrix<double> &lN, Matrix<double> const &uN, size_t i, size_t j) const {
+PolarDecoderSC::getLNRec(Matrix<double> &lN, Matrix<double> const &uN, size_t i, size_t j) const {
     if (!isnanf(lN[i][j])) {
         return lN[i][j];
     }
@@ -86,8 +64,7 @@ PolarDecoder::getLNRec(Matrix<double> &lN, Matrix<double> const &uN, size_t i, s
     return lN[i][j];
 }
 
-void PolarDecoder::updateUNRec(Matrix<double> &uN, Symbol bit, size_t ind, size_t s) const {
-
+void PolarDecoderSC::updateUNRec(Matrix<double> &uN, Symbol bit, size_t ind, size_t s) const {
     if (s > 0) {
         uN[ind][s] = bit.symbol;
         size_t curr_i = ind / 2;

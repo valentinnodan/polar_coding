@@ -11,8 +11,8 @@ include_directories(utils)
 add_executable(PolarCoding main.cpp
         coder/PolarCoder.cpp
         coder/PolarCoder.h
-        decoder/PolarDecoder.cpp
-        decoder/PolarDecoder.h
+        decoder/PolarDecoderSC.cpp
+        decoder/PolarDecoderSC.h
         construct/PolarCodeConstruct.cpp
         construct/PolarCodeConstruct.h
         utils/polar_utils.h
@@ -27,5 +27,5 @@ add_executable(PolarCoding main.cpp
         utils/Transform.h
         ldpc/encode/LDPCCoder.cpp
         ldpc/encode/LDPCCoder.h
-        ldpc/LDPCConstruct.h)
+        ldpc/LDPCConstruct.h ldpc/ldpc_utils.h decoder/PolarDecoder.h)
 target_link_libraries(PolarCoding -lpthread)
