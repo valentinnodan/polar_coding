@@ -16,7 +16,8 @@ Matrix<Symbol> PolarCoder::getFN(int n) {
 }
 
 Message PolarCoder::encode(Message const &u, std::set<size_t> const &indices,
-                           Message const &frozen, std::vector<size_t> const & reversedIndexes) {
+                           Message const &frozen, std::vector<size_t> const & reversedIndexes,
+                           bool reverse) {
     size_t n = indices.size() + frozen.size();
     size_t nn = log2(n);
     Message word;
@@ -39,40 +40,14 @@ Message PolarCoder::encode(Message const &u, std::set<size_t> const &indices,
             }
         }
     }
-    return word;
-}
-Message PolarCoder::encodeOld(Message const &u, std::set<size_t> const &indices,
-                              Message const &frozen, std::vector<size_t> const & reversedIndexes){
-    size_t n = indices.size() + frozen.size();
-    size_t nn = log2(n) + 1;
-    Message word;
-    if (u.size() == n) {
+    if (reverse) {
+        auto codeWordRes = Message(n);
         for (size_t i = 0; i < n; i++) {
-            word.push_back(u[i]);
+            codeWordRes[i] = word[reversedIndexes[i]];
         }
-    } else {
-        word = getWord(indices, frozen, u);
+        return codeWordRes;
     }
-    auto codingMatrix = Matrix<Symbol>(n, nn);
-    for (size_t i = 0; i < n; i++) {
-        codingMatrix[i][0] = word[i];
-    }
-    for (size_t i = 1; i < nn; i++) {
-        size_t step = n / (1ull << (i));
-        for (size_t j = 0; j < n; j++) {
-            if (j % (step * 2) >= step) {
-                codingMatrix[j][i] = codingMatrix[j][i - 1];
-            } else {
-                codingMatrix[j][i].symbol = (
-                        static_cast<int>(codingMatrix[j][i - 1].symbol + codingMatrix[j + step][i - 1].symbol) % 2);
-            }
-        }
-    }
-    auto codeWordRes = Message(n);
-    for (size_t i = 0; i < n; i++) {
-        codeWordRes[i] = codingMatrix[reversedIndexes[i]][nn - 1];
-    }
-    return codeWordRes;
+    return word;
 }
 
 Matrix<Symbol> PolarCoder::RN(Matrix<Symbol> const &m) {

@@ -12,14 +12,16 @@
 
 class PolarCoder {
 public:
-    static Message encode(Message const &u, std::set<size_t> const &indices, Message const &frozen, std::vector<size_t> const & reversedIndexes);
+    static Message encode(Message const &u,
+            std::set<size_t> const &indices,
+            Message const &frozen,
+            std::vector<size_t> const & reversedIndexes,
+            bool reverse);
 
     static Matrix<Symbol> getGN(int n);
 
     static Message getWord(std::set<size_t> const &indices, Message const &frozen, Message const &u);
 
-    static Message encodeOld(const Message &u, const std::set<size_t> &indices, const Message &frozen,
-                      const std::vector<size_t> &reversedIndexes);
 
 private:
     const static Matrix<Symbol> F;

@@ -67,8 +67,7 @@ inline int compareWords(Message const &a, Message const &b) {
     return res;
 }
 
-inline void runSimulation(double becProbability,
-                          size_t N,
+inline void runSimulation(size_t N,
                           size_t K,
                           size_t wordsAmount,
                           bool isSystematic,
@@ -79,9 +78,6 @@ inline void runSimulation(double becProbability,
         revPlace[reversedIndexes[i]] = i;
     }
     auto frozen = Message(N - K);
-
-    std::chrono::microseconds totalEncoder;
-    std::chrono::microseconds totalDecoder;
 
     auto H = transform(N, std::set<size_t>());
     auto G = PolarCoder::getGN(N);
@@ -99,13 +95,11 @@ inline void runSimulation(double becProbability,
         A = AA;
 
         const auto decoder = PolarDecoderBP(gaussianChannel, pair);
-//        const auto decoderSC = PolarDecoderSC(gaussianChannel);
         int e = 0;
         for (size_t j = 0; j < wordsAmount; j++) {
             auto myMsg = getRandomWord(K);
-            auto begin = std::chrono::high_resolution_clock::now();
 
-            auto cW = PolarCoder::encode(myMsg, A, frozen, reversedIndexes);
+            auto cW = PolarCoder::encode(myMsg, A, frozen, reversedIndexes, false);
             if (isSystematic) {
                 auto cc = Message();
                 for (size_t t = 0; t < N; t++) {
@@ -113,19 +107,13 @@ inline void runSimulation(double becProbability,
                         cc.push_back(cW[t]);
                     }
                 }
-                cW = PolarCoder::encode(cc, A, frozen, reversedIndexes);
+                cW = PolarCoder::encode(cc, A, frozen, reversedIndexes, false);
             }
 
-            auto end = std::chrono::high_resolution_clock::now();
-            totalEncoder += std::chrono::duration_cast<std::chrono::microseconds>(end - begin);
-
-//            auto word = PolarCoder::getWord(A, frozen, myMsg);
             auto gaussWord = gaussianChannel.Gauss(cW, N, K);
-            begin = std::chrono::high_resolution_clock::now();
             auto decodedWord = decoder.decode(gaussWord, A, N, K);
-//            auto decodedWord = decoderSC.decode(gaussWord, A, N, K);
             if (!isSystematic) {
-                decodedWord = PolarCoder::encode(decodedWord, A, frozen, reversedIndexes);
+                decodedWord = PolarCoder::encode(decodedWord, A, frozen, reversedIndexes, false);
             }
             auto dW = Message();
             for (size_t p = 0; p < N; p++) {
@@ -133,8 +121,6 @@ inline void runSimulation(double becProbability,
                     dW.emplace_back(decodedWord[p]);
                 }
             }
-            end = std::chrono::high_resolution_clock::now();
-            totalDecoder += std::chrono::duration_cast<std::chrono::microseconds>(end - begin);
             if (compareWords(dW, myMsg) > 0) {
                 if (isBER) {
                     e += compareWords(dW, myMsg);
@@ -151,8 +137,60 @@ inline void runSimulation(double becProbability,
         }
         std::cout << ii << " " << (double) e / totalAmount << std::endl;
     }
+}
 
-//    std::cout << "Total encoder time: " << totalEncoder.count() << " microseconds" << std::endl;
-//    std::cout << "Total decoder time: " << totalDecoder.count() << " microseconds" << std::endl;
+inline void runSimulationSC(size_t N,
+                            size_t K,
+                            size_t wordsAmount,
+                            bool isBER){
 
+    auto reversedIndexes = genReversedIndex(N);
+    auto revPlace = std::vector<size_t>(N);
+    for (size_t i = 0; i < N; i++) {
+        revPlace[reversedIndexes[i]] = i;
+    }
+    auto frozen = Message(N - K);
+
+    auto H = transform(N, std::set<size_t>());
+    auto G = PolarCoder::getGN(N);
+    auto pair = DecoderBP::prepare(H);
+
+    for (size_t i = 2; i < 20; i++) {
+        double ii = (double) i / 2;
+        auto gaussianChannel = Channel(ii);
+        auto cPC = PolarCodeConstruct(ii);
+        auto A = cPC.construct(N, K);
+
+        const auto decoder = PolarDecoderSC(gaussianChannel);
+        int e = 0;
+        for (size_t j = 0; j < wordsAmount; j++) {
+            auto myMsg = getRandomWord(K);
+
+            auto cW = PolarCoder::encode(myMsg, A, frozen, reversedIndexes, true);
+
+            auto gaussWord = gaussianChannel.Gauss(cW, N, K);
+            auto decodedWord = decoder.decode(gaussWord, A, N, K);
+
+            auto dW = Message();
+            for (size_t p = 0; p < N; p++) {
+                if (A.count(p) == 1) {
+                    dW.emplace_back(decodedWord[p]);
+                }
+            }
+            if (compareWords(dW, myMsg) > 0) {
+                if (isBER) {
+                    e += compareWords(dW, myMsg);
+                } else {
+                    e += 1;
+                }
+            }
+        }
+        size_t totalAmount;
+        if (isBER) {
+            totalAmount = wordsAmount * K;
+        } else {
+            totalAmount = wordsAmount;
+        }
+        std::cout << ii << " " << (double) e / totalAmount << std::endl;
+    }
 }
