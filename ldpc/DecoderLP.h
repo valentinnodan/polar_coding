@@ -2,13 +2,25 @@
 // Created by valentinnodan on 4/10/21.
 //
 
-#ifndef POLARCODING_DECODERLP_H
-#define POLARCODING_DECODERLP_H
+#pragma once
+
+#include <cstddef>
+#include <Symbol.h>
+#include <Matrix.h>
 
 
 class DecoderLP {
+public:
+    Message decode(size_t n, size_t r, size_t needed, const std::vector<double> &llr,
+                   const Matrix<size_t> &c,
+                   const Matrix<size_t> &v,
+                   size_t iter) const;
+    double alpha = 0.1;
 
+private:
+    double penalize(double t) const;
+    double projectDot(double dot) const;
+    std::vector<double> projectPolytope(std::vector<double> const & v, size_t s) const;
+    std::vector<double> projectProbabilitySimplex(std::vector<double> const & v) const;
+    std::vector<double> membershipTest(std::vector<double> const & vS, std::vector<double> const & u, std::vector<double> const & v) const;
 };
-
-
-#endif //POLARCODING_DECODERLP_H

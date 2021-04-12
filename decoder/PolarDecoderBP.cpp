@@ -20,7 +20,7 @@ Message PolarDecoderBP::decode(const Message &y, const std::set<size_t> &indices
         }
     }
     auto decoderLDPC = DecoderBP();
-    auto decodedWord = decoderLDPC.decode(n * (log2(n) + 1), n * log2(n), n, l, pair.second, pair.first, 100);
+    auto decodedWord = decoderLDPC.decode(n * (log2(n) + 1), n * log2(n), n, l, pair.second, pair.first, 200);
     for (size_t p = 0; p < N; p++) {
         if (indices.count(p) == 0) {
             decodedWord[p].symbol = 0;

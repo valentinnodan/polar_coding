@@ -27,5 +27,9 @@ add_executable(PolarCoding main.cpp
         utils/Transform.h
         ldpc/encode/LDPCCoder.cpp
         ldpc/encode/LDPCCoder.h
-        ldpc/LDPCConstruct.h ldpc/ldpc_utils.h decoder/PolarDecoder.h)
+        ldpc/LDPCConstruct.h
+        ldpc/ldpc_utils.h
+        decoder/PolarDecoder.h
+        ldpc/DecoderLP.cpp
+        ldpc/DecoderLP.h)
 target_link_libraries(PolarCoding -lpthread)
