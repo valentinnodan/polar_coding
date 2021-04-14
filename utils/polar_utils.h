@@ -8,12 +8,14 @@
 #include <vector>
 #include <iostream>
 #include <chrono>
+#include <sstream>
 #include "Symbol.h"
 #include "Transform.h"
 #include "../construct/PolarCodeConstruct.h"
 #include "../decoder/PolarDecoderBP.h"
 #include "../coder/PolarCoder.h"
 #include "../ldpc/DecoderBP.h"
+#include "../decoder/PolarDecoderLP.h"
 
 inline std::vector<size_t> genReversedIndex(size_t i) {
     std::vector<size_t> res;
@@ -72,6 +74,8 @@ inline void runSimulation(size_t N,
                           size_t wordsAmount,
                           bool isSystematic,
                           bool isBER) {
+    std::vector<std::string> bers = std::vector<std::string>();
+    std::vector<std::string> fers = std::vector<std::string>();
     auto reversedIndexes = genReversedIndex(N);
     auto revPlace = std::vector<size_t>(N);
     for (size_t i = 0; i < N; i++) {
@@ -79,12 +83,10 @@ inline void runSimulation(size_t N,
     }
     auto frozen = Message(N - K);
 
-    auto H = transform(N, std::set<size_t>());
     auto G = PolarCoder::getGN(N);
-    auto pair = DecoderBP::prepare(H);
 
-    for (size_t i = 2; i < 20; i++) {
-        double ii = (double) i / 2;
+    for (size_t i = 10; i < 17; i++) {
+        double ii = (double) i / 4;
         auto gaussianChannel = Channel(ii);
         auto cPC = PolarCodeConstruct(ii);
         auto A = cPC.construct(N, K);
@@ -93,9 +95,13 @@ inline void runSimulation(size_t N,
             AA.emplace(reversedIndexes[j]);
         }
         A = AA;
+        auto H = transform(N, A);
+        auto pair = DecoderBP::prepare(H);
 
-        const auto decoder = PolarDecoderBP(gaussianChannel, pair);
+        const auto decoder = PolarDecoderLP(gaussianChannel, pair);
         int e = 0;
+        int eBER = 0;
+        int eFER = 0;
         for (size_t j = 0; j < wordsAmount; j++) {
             auto myMsg = getRandomWord(K);
 
@@ -121,12 +127,20 @@ inline void runSimulation(size_t N,
                     dW.emplace_back(decodedWord[p]);
                 }
             }
+//            printWord(dW);
+//            printWord(myMsg);
+//            std::cout << std::endl;
+            if (j % 100 == 1) {
+                std::cout << j << std::endl;
+            }
             if (compareWords(dW, myMsg) > 0) {
                 if (isBER) {
                     e += compareWords(dW, myMsg);
                 } else {
                     e += 1;
                 }
+                eBER += compareWords(dW, myMsg);
+                eFER += 1;
             }
         }
         size_t totalAmount = 0;
@@ -135,14 +149,30 @@ inline void runSimulation(size_t N,
         } else {
             totalAmount = wordsAmount;
         }
-        std::cout << ii << " " << (double) e / totalAmount << std::endl;
+        std::cout << ii << std::endl;
+        std::ostringstream ssBER;
+        std::ostringstream ssFER;
+        ssBER << ii << " " << (double) eBER / (wordsAmount * K);
+        bers.push_back(ssBER.str());
+        ssFER << ii << " " << (double) eFER / wordsAmount;
+        fers.push_back(ssFER.str());
+        std::cout << "BER: " << ii << " " << (double) eBER / (wordsAmount * K) << std::endl;
+        std::cout << "FER: " <<  ii << " " << (double) eFER / wordsAmount << std::endl;
+    }
+    std::cout << "BER" << std::endl;
+    for (auto & ber : bers) {
+        std::cout << ber << std::endl;
+    }
+    std::cout << "FER" << std::endl;
+    for (auto & fer : fers) {
+        std::cout << fer << std::endl;
     }
 }
 
 inline void runSimulationSC(size_t N,
                             size_t K,
                             size_t wordsAmount,
-                            bool isBER){
+                            bool isBER) {
 
     auto reversedIndexes = genReversedIndex(N);
     auto revPlace = std::vector<size_t>(N);

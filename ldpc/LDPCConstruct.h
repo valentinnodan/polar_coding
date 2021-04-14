@@ -8,7 +8,7 @@
 
 inline std::pair<Matrix<size_t>,
         Matrix<size_t>> transformToSets() {
-    std::ifstream in("ldpc/672_336.txt");
+    std::ifstream in("ldpc/672_546.txt");
     if (!in) {
         std::cout << "Failed to open file " << std::endl;
         exit(0);
@@ -21,6 +21,7 @@ inline std::pair<Matrix<size_t>,
     c = stoi(number);
     line >> number;
     r = stoi(number);
+    r = c - r;
     auto H = Matrix<int>(r, c);
     Matrix<size_t> rows(r, c);
     Matrix<size_t> columns(c, r);
@@ -51,7 +52,7 @@ inline std::pair<Matrix<size_t>,
 
 inline Matrix<int> transformToMatrix (std::pair<Matrix<size_t>,
         Matrix<size_t>> const & sets) {
-    std::ifstream in("ldpc/672_336.txt");
+    std::ifstream in("ldpc/672_546.txt");
     if (!in) {
         std::cout << "Failed to open file" << std::endl;
         exit(0);
@@ -64,6 +65,7 @@ inline Matrix<int> transformToMatrix (std::pair<Matrix<size_t>,
     c = stoi(number);
     line >> number;
     r = stoi(number);
+    r = c - r;
     in.close();
     auto H = Matrix<int>(r, c, std::numeric_limits<int>::infinity());
     for (size_t i = 0; i < r; i++) {

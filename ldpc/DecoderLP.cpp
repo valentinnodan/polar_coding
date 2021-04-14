@@ -6,53 +6,54 @@
 #include <vector>
 #include <algorithm>
 #include <iostream>
+#include <polar_utils.h>
 #include "DecoderLP.h"
 
 Message DecoderLP::decode(size_t n, size_t r, size_t needed, const std::vector<double> &llr,
-                          const Matrix<size_t> &c,
-                          const Matrix<size_t> &v,
+                          const Matrix<size_t> &C,
+                          const Matrix<size_t> &V,
                           size_t iter) const {
     auto l = Matrix<double>(n, r, 0);
     auto m = Matrix<double>(n, r, 0);
     auto x = std::vector<double>(r, 0);
-    auto vv = std::vector<double>(r, 0);
+    auto v = std::vector<double>(r, 0);
     for (size_t k = 0; k < iter; k++) {
         for (size_t i = 0; i < r; i++) {
             double sum = 0;
-            for (size_t j = 1; j <= v[i][0]; j++) {
-                size_t jj = v[i][j];
+            for (size_t j = 1; j <= V[i][0]; j++) {
+                size_t jj = V[i][j];
                 sum += m[jj][i];
             }
-            sum = penalize(sum - llr[i]);
-            x[i] = projectDot(sum / v[i][0]);
+            x[i] = projectDot(penalize(sum - llr[i]) / V[i][0]);
         }
         for (size_t i = 0; i < n; i++) {
-            size_t lInd = 0;
-            for (size_t j = 1; j <= c[i][0]; j++) {
-                size_t jj = c[i][j];
-                vv[lInd++] = x[jj] + l[i][jj];
+            for (size_t j = 1; j <= C[i][0]; j++) {
+                size_t jj = C[i][j];
+//                std::cout << jj << " ";
+                v[j - 1] = x[jj] + l[i][jj];
             }
-            auto w = projectPolytope(vv, c[i][0]);
-            for (size_t j = 0; j < c[i][0]; j++) {
-                size_t jj = c[i][j + 1];
-                l[i][jj] = vv[j] - w[j];
-                m[i][jj] = 2 * w[j] - vv[j];
+//            std::cout << std::endl;
+            auto z = projectPolytope(v, C[i][0]);
+            for (size_t j = 1; j <= C[i][0]; j++) {
+                size_t jj = C[i][j];
+                l[i][jj] = v[j - 1] - z[j - 1];
+                m[i][jj] = 2 * z[j - 1] - v[j - 1];
             }
         }
     }
-    auto res = Message(r);
-    for (size_t i = 0; i < r; i++) {
-        if (x[i] > 0) {
-            res[i] = SymbolConsts::ONE;
+    auto res = Message();
+    for (size_t i = 0; i < needed; i++) {
+        if (x[i + r - needed] > 0) {
+            res.emplace_back(1);
         } else {
-            res[i] = SymbolConsts::ZERO;
+            res.emplace_back(0);
         }
     }
     return res;
 }
 
 double DecoderLP::penalize(double t) const {
-    if (std::abs(t) < 1e-10) {
+    if (std::abs(t) < 1e-7) {
         return t;
     }
     if (t > 0) {
@@ -72,10 +73,10 @@ double DecoderLP::projectDot(double dot) const {
 }
 
 std::vector<double> DecoderLP::projectPolytope(const std::vector<double> &v, size_t s) const {
-    auto f = std::vector<double>(s, 0.);
+    auto f = std::vector<int>(s, 0);
     size_t sum = 0;
     double minV = std::numeric_limits<double>::infinity();
-    size_t minInd = 0;
+    size_t minInd = -1;
     for (size_t i = 0; i < s; i++) {
         if (v[i] >= 0) {
             f[i] = 1;
@@ -91,11 +92,11 @@ std::vector<double> DecoderLP::projectPolytope(const std::vector<double> &v, siz
     }
     auto vv = std::vector<double>(s, 0);
     for (size_t i = 0; i < s; i++) {
-        vv[i] = v[i] * pow(-1, f[i]);
+        vv[i] = v[i] * powSign(f[i]);
     }
     auto u = projectProbabilitySimplex(vv);
     for (size_t i = 0; i < s; i++) {
-        u[i] = u[i] * pow(-1, f[i]);
+        u[i] = u[i] * powSign(f[i]);
     }
     return membershipTest(vv, u, v);
 }
@@ -108,11 +109,11 @@ std::vector<double> DecoderLP::projectProbabilitySimplex(const std::vector<doubl
     size_t maxInd = 0;
     for (size_t i = 1; i <= s; i++) {
         for (size_t j = 0; j < i; j++) {
-            u[i-1] += p[j];
+            u[i - 1] += p[j];
         }
-        u[i-1] -= 1;
-        u[i-1] /= i;
-        if (u[i-1] < p[i-1]) {
+        u[i - 1] -= 1;
+        u[i - 1] /= i;
+        if (u[i - 1] < p[i - 1]) {
             maxInd = i - 1;
         }
     }
@@ -127,14 +128,21 @@ std::vector<double> DecoderLP::membershipTest(const std::vector<double> &vv, con
                                               std::vector<double> const &v) const {
     size_t s = vv.size();
     double sum = 0;
-    auto w = std::vector<double>(s);
+    auto w = std::vector<double>();
     for (size_t i = 0; i < s; i++) {
         double d = projectDot(vv[i]);
         sum += d;
-        w[i] = projectDot(v[i]);
+        w.push_back(projectDot(v[i]));
     }
     if (sum >= 1 - (double) s / 2) {
         return w;
     } // todo split count w only one when needed
     return u;
+}
+
+int DecoderLP::powSign(int f) const {
+    if (f == 1) {
+        return -1;
+    }
+    return 1;
 }

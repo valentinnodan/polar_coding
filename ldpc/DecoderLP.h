@@ -12,7 +12,7 @@
 class DecoderLP {
 public:
     Message decode(size_t n, size_t r, size_t needed, const std::vector<double> &llr,
-                   const Matrix<size_t> &c,
+                   const Matrix<size_t> &C,
                    const Matrix<size_t> &v,
                    size_t iter) const;
     double alpha = 0.1;
@@ -23,4 +23,5 @@ private:
     std::vector<double> projectPolytope(std::vector<double> const & v, size_t s) const;
     std::vector<double> projectProbabilitySimplex(std::vector<double> const & v) const;
     std::vector<double> membershipTest(std::vector<double> const & vS, std::vector<double> const & u, std::vector<double> const & v) const;
+    int powSign(int f) const;
 };

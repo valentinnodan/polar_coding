@@ -40,7 +40,17 @@ inline Matrix<int> transform(size_t n, const std::set<size_t> &indices) {
 //            }
         }
     }
-    return H;
+    auto H_res = Matrix<int>(n * (nn + 1) - (n - indices.size()), n * nn);
+    size_t str_ind = 0;
+    for (size_t i = 0; i < n * (nn + 1); i++) {
+        if (i >= n || indices.count(i) == 1) {
+            for (size_t j = 0; j < n * nn; j++) {
+                H_res[str_ind][j] = H[i][j];
+            }
+            str_ind++;
+        }
+    }
+    return H_res;
 }
 
 inline Matrix<int> transformNaive(size_t n, const std::set<size_t> &indices) {
