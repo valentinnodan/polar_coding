@@ -15,7 +15,7 @@ public:
                    const Matrix<size_t> &C,
                    const Matrix<size_t> &v,
                    size_t iter) const;
-    double alpha = 0.1;
+    double alpha = 0.05;
 
 private:
     double penalize(double t) const;

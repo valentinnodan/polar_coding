@@ -52,7 +52,8 @@ inline void printWord(Message const &cW) {
 inline Message getRandomWord(size_t length) {
     auto res = Message(length);
     for (size_t i = 0; i < length; ++i) {
-        res[i].symbol = rand() % 2;
+//        res[i].symbol = rand() % 2;
+        res[i].symbol = 0;
     }
     return res;
 }
@@ -69,11 +70,13 @@ inline int compareWords(Message const &a, Message const &b) {
     return res;
 }
 
-inline void runSimulation(size_t N,
+inline std::string runSimulation(size_t N,
                           size_t K,
                           size_t wordsAmount,
+                          double alpha,
                           bool isSystematic,
-                          bool isBER) {
+                          bool isBER,
+                          bool isLP) {
     std::vector<std::string> bers = std::vector<std::string>();
     std::vector<std::string> fers = std::vector<std::string>();
     auto reversedIndexes = genReversedIndex(N);
@@ -85,8 +88,9 @@ inline void runSimulation(size_t N,
 
     auto G = PolarCoder::getGN(N);
 
-    for (size_t i = 10; i < 17; i++) {
-        double ii = (double) i / 4;
+#pragma omp parallel for
+    for (size_t i = 1; i < 14; i++) {
+        double ii = (double) i / 2;
         auto gaussianChannel = Channel(ii);
         auto cPC = PolarCodeConstruct(ii);
         auto A = cPC.construct(N, K);
@@ -98,13 +102,15 @@ inline void runSimulation(size_t N,
         auto H = transform(N, A);
         auto pair = DecoderBP::prepare(H);
 
-        const auto decoder = PolarDecoderLP(gaussianChannel, pair);
+        auto decoder = PolarDecoderLP(gaussianChannel, pair);
+        if (isLP) {
+            decoder.alpha = alpha;
+        }
         int e = 0;
         int eBER = 0;
         int eFER = 0;
         for (size_t j = 0; j < wordsAmount; j++) {
             auto myMsg = getRandomWord(K);
-
             auto cW = PolarCoder::encode(myMsg, A, frozen, reversedIndexes, false);
             if (isSystematic) {
                 auto cc = Message();
@@ -130,10 +136,11 @@ inline void runSimulation(size_t N,
 //            printWord(dW);
 //            printWord(myMsg);
 //            std::cout << std::endl;
-            if (j % 100 == 1) {
-                std::cout << j << std::endl;
-            }
+//            if (j % 100 == 1) {
+//                std::cout << j << std::endl;
+//            }
             if (compareWords(dW, myMsg) > 0) {
+//                std::cout << j << " " << compareWords(dW, myMsg) << std::endl;
                 if (isBER) {
                     e += compareWords(dW, myMsg);
                 } else {
@@ -149,24 +156,27 @@ inline void runSimulation(size_t N,
         } else {
             totalAmount = wordsAmount;
         }
-        std::cout << ii << std::endl;
+//        std::cout << ii << std::endl;
         std::ostringstream ssBER;
         std::ostringstream ssFER;
         ssBER << ii << " " << (double) eBER / (wordsAmount * K);
         bers.push_back(ssBER.str());
         ssFER << ii << " " << (double) eFER / wordsAmount;
         fers.push_back(ssFER.str());
-        std::cout << "BER: " << ii << " " << (double) eBER / (wordsAmount * K) << std::endl;
-        std::cout << "FER: " <<  ii << " " << (double) eFER / wordsAmount << std::endl;
     }
-    std::cout << "BER" << std::endl;
+    std::ostringstream output;
+    if (isLP) {
+        output << "alpha: " << alpha << std::endl;
+    }
+    output << "BER" << std::endl;
     for (auto & ber : bers) {
-        std::cout << ber << std::endl;
+        output << ber << std::endl;
     }
-    std::cout << "FER" << std::endl;
+    output << "FER" << std::endl;
     for (auto & fer : fers) {
-        std::cout << fer << std::endl;
+        output << fer << std::endl;
     }
+    return output.str();
 }
 
 inline void runSimulationSC(size_t N,

@@ -2,11 +2,9 @@
 // Created by valentinnodan on 4/10/21.
 //
 
-#include <cmath>
 #include <vector>
 #include <algorithm>
 #include <iostream>
-#include <polar_utils.h>
 #include "DecoderLP.h"
 
 Message DecoderLP::decode(size_t n, size_t r, size_t needed, const std::vector<double> &llr,
@@ -15,35 +13,37 @@ Message DecoderLP::decode(size_t n, size_t r, size_t needed, const std::vector<d
                           size_t iter) const {
     auto l = Matrix<double>(n, r, 0);
     auto m = Matrix<double>(n, r, 0);
-    auto x = std::vector<double>(r, 0);
-    auto v = std::vector<double>(r, 0);
+    auto x = std::vector<double>(n, 0);
+    auto v = std::vector<double>(n, 0);
+    auto sums = std::vector<double>(n, 0);
     for (size_t k = 0; k < iter; k++) {
+        for (size_t i = 0; i < n; i++) {
+//            double sum = 0;
+//            for (size_t j = 1; j <= C[i][0]; j++) {
+//                size_t jj = C[i][j];
+//                sum += m[i][jj];
+//            }
+            x[i] = projectDot(penalize(sums[i] - llr[i]) / C[i][0]);
+            sums[i] = 0;
+        }
+
         for (size_t i = 0; i < r; i++) {
-            double sum = 0;
             for (size_t j = 1; j <= V[i][0]; j++) {
                 size_t jj = V[i][j];
-                sum += m[jj][i];
+                v[j - 1] = x[jj] + l[jj][i];
             }
-            x[i] = projectDot(penalize(sum - llr[i]) / V[i][0]);
-        }
-        for (size_t i = 0; i < n; i++) {
-            for (size_t j = 1; j <= C[i][0]; j++) {
-                size_t jj = C[i][j];
-//                std::cout << jj << " ";
-                v[j - 1] = x[jj] + l[i][jj];
-            }
-//            std::cout << std::endl;
-            auto z = projectPolytope(v, C[i][0]);
-            for (size_t j = 1; j <= C[i][0]; j++) {
-                size_t jj = C[i][j];
-                l[i][jj] = v[j - 1] - z[j - 1];
-                m[i][jj] = 2 * z[j - 1] - v[j - 1];
+            auto z = projectPolytope(v, V[i][0]);
+            for (size_t j = 1; j <= V[i][0]; j++) {
+                size_t jj = V[i][j];
+                l[jj][i] = v[j - 1] - z[j - 1];
+                m[jj][i] = 2 * z[j - 1] - v[j - 1];
+                sums[jj] += m[jj][i];
             }
         }
     }
     auto res = Message();
     for (size_t i = 0; i < needed; i++) {
-        if (x[i + r - needed] > 0) {
+        if (x[i + n - needed] > 0) {
             res.emplace_back(1);
         } else {
             res.emplace_back(0);

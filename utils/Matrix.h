@@ -44,6 +44,9 @@ public:
 
     size_t height{};
     size_t width{};
+
+    Matrix<T> transpose();
+
 private:
     std::vector<T> data;
 };
