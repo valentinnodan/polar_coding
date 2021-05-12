@@ -8,14 +8,15 @@
 #include <Symbol.h>
 #include <Matrix.h>
 
+//#define double long double
 
 class DecoderLP {
 public:
     Message decode(size_t n, size_t r, size_t needed, const std::vector<double> &llr,
-                   const Matrix<size_t> &C,
-                   const Matrix<size_t> &v,
+                   const Matrix<size_t> &Nv,
+                   const Matrix<size_t> &Nc,
                    size_t iter) const;
-    double alpha = 0.05;
+    double alpha = 0.1;
 
 private:
     double penalize(double t) const;

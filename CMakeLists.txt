@@ -31,7 +31,9 @@ add_executable(PolarCoding main.cpp
         ldpc/ldpc_utils.h
         decoder/PolarDecoder.h
         ldpc/DecoderLP.cpp
-        ldpc/DecoderLP.h decoder/PolarDecoderLP.cpp decoder/PolarDecoderLP.h)
+        ldpc/DecoderLP.h decoder/PolarDecoderLP.cpp decoder/PolarDecoderLP.h
+#        ldpc/DecoderADMM_LP.cpp ldpc/DecoderADMM_LP.h
+        )
 
 find_package(OpenMP)
 if (OPENMP_FOUND)

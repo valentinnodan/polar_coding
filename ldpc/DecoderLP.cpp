@@ -8,41 +8,38 @@
 #include "DecoderLP.h"
 
 Message DecoderLP::decode(size_t n, size_t r, size_t needed, const std::vector<double> &llr,
-                          const Matrix<size_t> &C,
-                          const Matrix<size_t> &V,
+                          const Matrix<size_t> &Nv,
+                          const Matrix<size_t> &Nc,
                           size_t iter) const {
     auto l = Matrix<double>(n, r, 0);
-    auto m = Matrix<double>(n, r, 0);
     auto x = std::vector<double>(n, 0);
     auto v = std::vector<double>(n, 0);
     auto sums = std::vector<double>(n, 0);
     for (size_t k = 0; k < iter; k++) {
         for (size_t i = 0; i < n; i++) {
-//            double sum = 0;
-//            for (size_t j = 1; j <= C[i][0]; j++) {
-//                size_t jj = C[i][j];
-//                sum += m[i][jj];
-//            }
-            x[i] = projectDot(penalize(sums[i] - llr[i]) / C[i][0]);
+            x[i] = projectDot(penalize(sums[i] - llr[i]) / Nv[i][0]);
             sums[i] = 0;
         }
 
         for (size_t i = 0; i < r; i++) {
-            for (size_t j = 1; j <= V[i][0]; j++) {
-                size_t jj = V[i][j];
+            for (size_t j = 1; j <= Nc[i][0]; j++) {
+                size_t jj = Nc[i][j];
                 v[j - 1] = x[jj] + l[jj][i];
             }
-            auto z = projectPolytope(v, V[i][0]);
-            for (size_t j = 1; j <= V[i][0]; j++) {
-                size_t jj = V[i][j];
+            auto z = projectPolytope(v, Nc[i][0]);
+            for (size_t j = 1; j <= Nc[i][0]; j++) {
+                size_t jj = Nc[i][j];
                 l[jj][i] = v[j - 1] - z[j - 1];
-                m[jj][i] = 2 * z[j - 1] - v[j - 1];
-                sums[jj] += m[jj][i];
+                sums[jj] += 2 * z[j - 1] - v[j - 1];
             }
         }
     }
     auto res = Message();
+    res.reserve(needed);
     for (size_t i = 0; i < needed; i++) {
+        if (x[i + n - needed] == 0) {
+            res.emplace_back(rand() % 2);
+        }
         if (x[i + n - needed] > 0) {
             res.emplace_back(1);
         } else {
@@ -53,7 +50,7 @@ Message DecoderLP::decode(size_t n, size_t r, size_t needed, const std::vector<d
 }
 
 double DecoderLP::penalize(double t) const {
-    if (std::abs(t) < 1e-7) {
+    if (std::abs(t) == 0) {
         return t;
     }
     if (t > 0) {
@@ -74,7 +71,7 @@ double DecoderLP::projectDot(double dot) const {
 
 std::vector<double> DecoderLP::projectPolytope(const std::vector<double> &v, size_t s) const {
     auto f = std::vector<int>(s, 0);
-    size_t sum = 0;
+    int sum = 0;
     double minV = std::numeric_limits<double>::infinity();
     size_t minInd = -1;
     for (size_t i = 0; i < s; i++) {
@@ -104,22 +101,19 @@ std::vector<double> DecoderLP::projectPolytope(const std::vector<double> &v, siz
 std::vector<double> DecoderLP::projectProbabilitySimplex(const std::vector<double> &v) const {
     size_t s = v.size();
     auto p = v;
-    sort(p.begin(), p.end(), std::greater<>());
-    auto u = std::vector<double>(s, 0);
-    size_t maxInd = 0;
-    for (size_t i = 1; i <= s; i++) {
-        for (size_t j = 0; j < i; j++) {
-            u[i - 1] += p[j];
-        }
-        u[i - 1] -= 1;
-        u[i - 1] /= i;
-        if (u[i - 1] < p[i - 1]) {
-            maxInd = i - 1;
+    std::sort(p.begin(), p.end(), std::greater<>());
+    double u_i = 0;
+    double prev = 0;
+    for (size_t i = 0; i < s; i++) {
+        prev = prev + p[i];
+        double u = (prev - 1) / (i + 1);
+        if (u < p[i]) {
+            u_i = u;
         }
     }
     auto w = std::vector<double>(s, 0);
     for (size_t i = 0; i < s; i++) {
-        w[i] = std::max(v[i] - u[maxInd] - 0.5, -0.5);
+        w[i] = std::max(v[i] - u_i - 0.5, -0.5);
     }
     return w;
 }
@@ -128,15 +122,16 @@ std::vector<double> DecoderLP::membershipTest(const std::vector<double> &vv, con
                                               std::vector<double> const &v) const {
     size_t s = vv.size();
     double sum = 0;
-    auto w = std::vector<double>();
     for (size_t i = 0; i < s; i++) {
-        double d = projectDot(vv[i]);
-        sum += d;
-        w.push_back(projectDot(v[i]));
+        sum += projectDot(vv[i]);
     }
-    if (sum >= 1 - (double) s / 2) {
+    if (sum >= 1 - ((double) s) / 2) {
+        auto w = std::vector<double>(s);
+        for (size_t i = 0; i < s; i++) {
+            w[i] = projectDot(v[i]);
+        }
         return w;
-    } // todo split count w only one when needed
+    }
     return u;
 }
 
