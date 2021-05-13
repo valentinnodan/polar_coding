@@ -20,9 +20,9 @@ public:
 
 private:
     double penalize(double t) const;
-    double projectDot(double dot) const;
-    std::vector<double> projectPolytope(std::vector<double> const & v, size_t s) const;
-    std::vector<double> projectProbabilitySimplex(std::vector<double> const & v) const;
-    std::vector<double> membershipTest(std::vector<double> const & vS, std::vector<double> const & u, std::vector<double> const & v) const;
-    int powSign(int f) const;
+    static double projectDot(double dot) ;
+    static std::vector<double> projectPolytope(std::vector<double> const & v, size_t s) ;
+    static std::vector<double> projectProbabilitySimplex(std::vector<double> const & v) ;
+    static std::vector<double> membershipTest(std::vector<double> const & vS, std::vector<double> const & u, std::vector<double> const & v) ;
+    static int powSign(int f) ;
 };

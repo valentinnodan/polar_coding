@@ -11,7 +11,7 @@ Message DecoderLP::decode(size_t n, size_t r, size_t needed, const std::vector<d
                           const Matrix<size_t> &Nv,
                           const Matrix<size_t> &Nc,
                           size_t iter) const {
-    auto l = Matrix<double>(n, r, 0);
+    auto l = Matrix<double>(r, n, 0);
     auto x = std::vector<double>(n, 0);
     auto v = std::vector<double>(n, 0);
     auto sums = std::vector<double>(n, 0);
@@ -24,12 +24,12 @@ Message DecoderLP::decode(size_t n, size_t r, size_t needed, const std::vector<d
         for (size_t i = 0; i < r; i++) {
             for (size_t j = 1; j <= Nc[i][0]; j++) {
                 size_t jj = Nc[i][j];
-                v[j - 1] = x[jj] + l[jj][i];
+                v[j - 1] = x[jj] + l[i][j - 1];
             }
             auto z = projectPolytope(v, Nc[i][0]);
             for (size_t j = 1; j <= Nc[i][0]; j++) {
                 size_t jj = Nc[i][j];
-                l[jj][i] = v[j - 1] - z[j - 1];
+                l[i][j - 1] = v[j - 1] - z[j - 1];
                 sums[jj] += 2 * z[j - 1] - v[j - 1];
             }
         }
@@ -59,7 +59,7 @@ double DecoderLP::penalize(double t) const {
     return t - alpha;
 }
 
-double DecoderLP::projectDot(double dot) const {
+double DecoderLP::projectDot(double dot) {
     if (dot > 0.5) {
         return 0.5;
     }
@@ -69,7 +69,7 @@ double DecoderLP::projectDot(double dot) const {
     return dot;
 }
 
-std::vector<double> DecoderLP::projectPolytope(const std::vector<double> &v, size_t s) const {
+std::vector<double> DecoderLP::projectPolytope(const std::vector<double> &v, size_t s) {
     auto f = std::vector<int>(s, 0);
     int sum = 0;
     double minV = std::numeric_limits<double>::infinity();
@@ -98,16 +98,16 @@ std::vector<double> DecoderLP::projectPolytope(const std::vector<double> &v, siz
     return membershipTest(vv, u, v);
 }
 
-std::vector<double> DecoderLP::projectProbabilitySimplex(const std::vector<double> &v) const {
+std::vector<double> DecoderLP::projectProbabilitySimplex(const std::vector<double> &v) {
     size_t s = v.size();
     auto p = v;
     std::sort(p.begin(), p.end(), std::greater<>());
     double u_i = 0;
     double prev = 0;
-    for (size_t i = 0; i < s; i++) {
-        prev = prev + p[i];
-        double u = (prev - 1) / (i + 1);
-        if (u < p[i]) {
+    for (size_t i = 1; i <= s; i++) {
+        prev += p[i - 1];
+        double u = (prev - 1) / i;
+        if (u < p[i - 1]) {
             u_i = u;
         }
     }
@@ -119,7 +119,7 @@ std::vector<double> DecoderLP::projectProbabilitySimplex(const std::vector<doubl
 }
 
 std::vector<double> DecoderLP::membershipTest(const std::vector<double> &vv, const std::vector<double> &u,
-                                              std::vector<double> const &v) const {
+                                              std::vector<double> const &v) {
     size_t s = vv.size();
     double sum = 0;
     for (size_t i = 0; i < s; i++) {
@@ -135,7 +135,7 @@ std::vector<double> DecoderLP::membershipTest(const std::vector<double> &vv, con
     return u;
 }
 
-int DecoderLP::powSign(int f) const {
+int DecoderLP::powSign(int f) {
     if (f == 1) {
         return -1;
     }

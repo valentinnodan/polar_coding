@@ -8,10 +8,10 @@ int main() {
 
     size_t N = 256;
     size_t K = 128;
-    const size_t wordsAmount = 1000;
+    const size_t wordsAmount = 100000;
 //
 //
-    runSimulationLDPC(wordsAmount, 3, 13);
+    runSimulationLDPC(wordsAmount, 3, 15);
 //    auto cres = std::async(std::launch::async, runSimulation, N, K, wordsAmount, 0.1, true, true, true);
 //    auto res0 = std::async(std::launch::async, runSimulation, N, K, wordsAmount, 0.125, true, true, true);
 //    auto res1 = std::async(std::launch::async, runSimulation, N, K, wordsAmount, 0.15, true, true, true);

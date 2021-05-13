@@ -15,22 +15,38 @@
 inline void runSimulationLDPC(size_t wordsAmount, size_t ebLeftBorder, size_t ebRightBorder){
 //    size_t N = 672;
 //    size_t K = 546;
+
     size_t N = 155;
     size_t K = 62;
+
+//    size_t N = 8;
+//    size_t K = 4;
+
+
     auto c = LDPCCoder();
     auto H = constructTanner(5, 3, 31);
+//    auto H = Matrix<int>(N, K, std::vector<int>{0, 0, 0, 1,
+//                                               0, 0, 1, 1,
+//                                               0, 1, 0, 1,
+//                                               0, 1, 1, 1,
+//                                               1, 0, 0, 1,
+//                                               1, 0, 1, 1,
+//                                               1, 1, 0, 1,
+//                                               1, 1, 1, 1});
     H = H.transpose();
+//    std::cout << H << std::endl;
+
     auto ss = DecoderBP::prepare(H);
 //    auto ss = transformToSets();
     std::cout << ss.first.height << std::endl;
     auto m = c.transformH(H);
     std::vector<std::string> bers = std::vector<std::string>(ebRightBorder - ebLeftBorder);
     std::vector<std::string> fers = std::vector<std::string>(ebRightBorder - ebLeftBorder);
-#pragma omp parallel for
+//#pragma omp parallel for
     for (size_t i = ebLeftBorder; i < ebRightBorder; i++) {
         double ii = (double) i / 2;
         auto gaussianChannel = Channel(ii);
-        auto s = gaussianChannel.getSigma(N, N - K);
+        auto s = gaussianChannel.getSigma(N, K);
         const auto decoder = DecoderLP();
         int e = 0;
         int eBER = 0;
