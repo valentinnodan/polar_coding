@@ -10,7 +10,6 @@
 #include "channel/Channel.h"
 #include "DecoderBP.h"
 #include "DecoderLP.h"
-#include "DecoderADMM_LP.h"
 
 inline void runSimulationLDPC(size_t wordsAmount, size_t ebLeftBorder, size_t ebRightBorder) {
     auto c = LDPCCoder();
@@ -43,8 +42,8 @@ inline void runSimulationLDPC(size_t wordsAmount, size_t ebLeftBorder, size_t eb
         double ii = (double) i / 2;
         auto gaussianChannel = Channel(ii);
         auto s = gaussianChannel.getSigma(N, K);
-        const auto decoder = DecoderLP();
-        const auto decoderBP = DecoderBP();
+        auto decoder = DecoderLP(N, N-K);
+        const auto decoderBP = DecoderBP(N, N - K);
         int e = 0;
         int eBER = 0;
         int eWER = 0;
@@ -59,9 +58,8 @@ inline void runSimulationLDPC(size_t wordsAmount, size_t ebLeftBorder, size_t eb
             for (size_t i1 = 0; i1 < N; ++i1) {
                 l[i1] = 2 * gaussWord[i1].symbol / s;
             }
-            auto res = decoder.decode(N, N - K, N, l, ss.second, ss.first, 200);
-            auto resBP = decoderBP.decode(N, N - K, N, l, ss.second, ss.first, 200);
-//            auto res = decoder.decode(N, N-K, N, l, ss.first, ss.second, 60);
+            auto res = decoder.decode(N, l, ss.second, ss.first, 200);
+            auto resBP = decoderBP.decode( N, l, ss.second, ss.first, 200);
             if (compareWords(res, r) > 0) {
                 e += 1;
                 eBER += compareWords(res, r);

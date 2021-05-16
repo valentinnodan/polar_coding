@@ -5,7 +5,7 @@
 #include <cmath>
 #include "DecoderBP.h"
 
-Message DecoderBP::decode(size_t n, size_t r, size_t needed, const std::vector<double> &llr,
+Message DecoderBP::decode(size_t needed, const std::vector<double> &llr,
                           const Matrix<size_t> &c,
                           const Matrix<size_t> &v,
                           const size_t iter) const {

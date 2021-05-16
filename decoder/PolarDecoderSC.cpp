@@ -8,12 +8,10 @@
 #include "PolarDecoderSC.h"
 
 Message
-PolarDecoderSC::decode(Message const &y, std::set<size_t> const &indices,
-                       size_t N, size_t K) const {
-    size_t n = y.size();
+PolarDecoderSC::decode(Message const &y, std::set<size_t> const &indices) {
     size_t nn = log2(n);
 
-    auto s = myChannel.getSigma(N, K);
+    auto s = myChannel.getSigma(n, k);
     auto lN = Matrix<double>(n, nn + 1, NAN);
     auto uN = Matrix<double>(n, nn + 1, NAN);
     for (size_t i = 0; i < n; ++i) {

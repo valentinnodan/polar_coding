@@ -8,19 +8,17 @@
 
 inline std::pair<Matrix<size_t>,
         Matrix<size_t>> transformToSets() {
-    std::ifstream in("tanner.txt");
+    std::ifstream in("../ldpc/tanner.txt");
     if (!in) {
         std::cout << "Failed to open file " << std::endl;
         exit(0);
     }
-    std::string row, number, curr;
+    std::string row, curr;
     getline(in, row);
     std::istringstream line(row);
-    line >> number;
     size_t r, c;
-    c = stoi(number);
-    line >> number;
-    r = stoi(number);
+    line >> c;
+    line >> r;
     r = c - r;
     auto H = Matrix<int>(r, c);
     Matrix<size_t> rows(r, c);
@@ -28,21 +26,17 @@ inline std::pair<Matrix<size_t>,
     for (size_t i = 0; i < c; i++) {
         getline(in, row);
         std::istringstream curr_line(row);
-        curr_line >> number;
-        columns[i][0] = stoi(number);
-        for (size_t j = 1; j <= stoi(number); j++) {
-            curr_line >> curr;
-            columns[i][j] = stoi(curr);
+        curr_line >> columns[i][0];
+        for (size_t j = 1; j <= columns[i][0]; j++) {
+            curr_line >> columns[i][j];
         }
     }
     for (size_t i = 0; i < r; i++) {
         getline(in, row);
         std::istringstream curr_line(row);
-        curr_line >> number;
-        rows[i][0] = stoi(number);
-        for (size_t j = 1; j <= stoi(number); j++) {
-            curr_line >> curr;
-            rows[i][j] = stoi(curr);
+        curr_line >> rows[i][0];
+        for (size_t j = 1; j <= rows[i][0]; j++) {
+            curr_line >> rows[i][j];
         }
     }
     in.close();

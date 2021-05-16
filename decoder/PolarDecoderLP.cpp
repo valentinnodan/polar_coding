@@ -5,21 +5,20 @@
 #include "PolarDecoderLP.h"
 #include "../ldpc/DecoderLP.h"
 
-Message PolarDecoderLP::decode(const Message &y, const std::set<size_t> &indices, size_t N, size_t K) const {
-    size_t n = y.size();
 
-    auto s = myChannel.getSigma(N, K);
+Message PolarDecoderLP::decode(const Message &y, const std::set<size_t> &indices) {
+    assert (y.size() == n);
+    assert (indices.size() == n - k);
+
+    auto s = myChannel.getSigma(n, k);
     size_t step = n - indices.size();
-    auto l = std::vector<double>(n * (log2(n) + 1) - step, 0);
+    auto &l = data.decode_l;
     double kk = n * log2(n);
     for (size_t i = 0; i < n; ++i) {
         l[i + kk - step] = 2 * y[i].symbol / s;
     }
-    auto decoderLDPC = DecoderLP();
-    decoderLDPC.alpha = alpha;
-    auto nn = n * (log2(n) + 1);
-    
-    auto decodedWord = decoderLDPC.decode(nn - step, kk, n, l, pair.second, pair.first, 50);
+
+    auto decodedWord = data.decoderLDPC.decode(n, l, pair.second, pair.first, 100);
     for (size_t p = 0; p < n; p++) {
         if (indices.count(p) == 0) {
             decodedWord[p].symbol = 0;
