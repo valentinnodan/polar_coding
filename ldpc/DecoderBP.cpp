@@ -84,22 +84,43 @@ std::pair<Matrix<size_t>,
             }
         }
     }
+    auto reducedV = std::vector<std::unordered_set<size_t>>();
+    for (size_t i = 0; i < h.height; i++) {
+        bool flag = false;
+        for (size_t j = i + 1; j < h.height; j++) {
+            if (v[i] == v[j]) {
+                flag = true;
+                break;
+            }
+        }
+        if (!flag) {
+            reducedV.push_back(v[i]);
+        } else {
+
+        }
+    }
+    auto reducedC = std::vector<std::unordered_set<size_t>>(h.width);
+    for (size_t i = 0; i < h.height; i++) {
+        for (size_t j: reducedV[i]) {
+            reducedC[j].emplace(i);
+        }
+    }
     size_t j;
     Matrix<size_t> cc = Matrix<size_t>(h.width, 10, 0);
-    Matrix<size_t> vv = Matrix<size_t>(h.height, 10, 0);
+    Matrix<size_t> vv = Matrix<size_t>(reducedV.size(), 10, 0);
     for (size_t i = 0; i < h.width; i++) {
-        cc[i][0] = c[i].size();
+        cc[i][0] = reducedC[i].size();
         j = 1;
-        for (size_t h1: c[i]) {
+        for (size_t h1: reducedC[i]) {
             cc[i][j] = h1;
             j++;
         }
     }
 
-    for (size_t i = 0; i < h.height; i++) {
-        vv[i][0] = v[i].size();
+    for (size_t i = 0; i < reducedV.size(); i++) {
+        vv[i][0] = reducedV[i].size();
         j = 1;
-        for (size_t h1: v[i]) {
+        for (size_t h1: reducedV[i]) {
             vv[i][j] = h1;
             j++;
         }

@@ -37,10 +37,9 @@ Message DecoderLP::decode(size_t n, size_t r, size_t needed, const std::vector<d
     auto res = Message();
     res.reserve(needed);
     for (size_t i = 0; i < needed; i++) {
-        if (x[i + n - needed] == 0) {
-            res.emplace_back(rand() % 2);
-        }
-        if (x[i + n - needed] > 0) {
+        size_t i1 = i + n - needed;
+        double tX = projectDot(penalize(sums[i1] - llr[i1]) / Nv[i1][0]);
+        if (tX > 0) {
             res.emplace_back(1);
         } else {
             res.emplace_back(0);
@@ -113,7 +112,7 @@ std::vector<double> DecoderLP::projectProbabilitySimplex(const std::vector<doubl
     }
     auto w = std::vector<double>(s, 0);
     for (size_t i = 0; i < s; i++) {
-        w[i] = std::max(v[i] - u_i - 0.5, -0.5);
+        w[i] = projectDot(v[i] - u_i - 0.5);
     }
     return w;
 }

@@ -8,7 +8,7 @@
 
 inline std::pair<Matrix<size_t>,
         Matrix<size_t>> transformToSets() {
-    std::ifstream in("ldpc/672_546.txt");
+    std::ifstream in("tanner.txt");
     if (!in) {
         std::cout << "Failed to open file " << std::endl;
         exit(0);
@@ -46,12 +46,11 @@ inline std::pair<Matrix<size_t>,
         }
     }
     in.close();
-    return std::pair<Matrix<size_t>,
-            Matrix<size_t>>{rows, columns};
+    return std::make_pair(rows, columns);
 }
 
-inline Matrix<int> transformToMatrix (std::pair<Matrix<size_t>,
-        Matrix<size_t>> const & sets) {
+inline Matrix<int> transformToMatrix(std::pair<Matrix<size_t>,
+        Matrix<size_t>> const &sets) {
     size_t r, c;
     c = sets.second.height;
     r = sets.first.height;
@@ -65,7 +64,7 @@ inline Matrix<int> transformToMatrix (std::pair<Matrix<size_t>,
     return H;
 }
 
-inline void shiftedEye(Matrix<int>& H, size_t s, size_t t, size_t p, size_t amount){
+inline void shiftedEye(Matrix<int> &H, size_t s, size_t t, size_t p, size_t amount) {
     amount %= p;
     for (size_t i = 0; i < amount; i++) {
         H[p - amount + i + s * p][i + t * p] = 1;
@@ -79,10 +78,15 @@ inline void shiftedEye(Matrix<int>& H, size_t s, size_t t, size_t p, size_t amou
 inline Matrix<int> constructTanner(size_t N, size_t K, size_t p) {
     auto H = Matrix<int>(p * N, p * K, 0);
     int a = 2;
-    int b = 3;
+    int b = 5;
     for (size_t i = 0; i < N; i++) {
         for (size_t j = 0; j < K; j++) {
-            shiftedEye(H, i, j, p, static_cast<size_t>(pow(a, j) * pow(b, i)));
+            shiftedEye(H, i, j, p, static_cast<size_t>(pow(b, j) * pow(a, i)));
+        }
+    }
+    for (size_t i = 0; i < p * K; i++) {
+        for (size_t j = i; j < p * K; j++) {
+
         }
     }
     return H;

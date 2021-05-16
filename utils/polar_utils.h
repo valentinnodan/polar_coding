@@ -52,8 +52,8 @@ inline void printWord(Message const &cW) {
 inline Message getRandomWord(size_t length) {
     auto res = Message(length);
     for (size_t i = 0; i < length; ++i) {
-//        res[i].symbol = rand() % 2;
-        res[i].symbol = 0;
+        res[i].symbol = rand() % 2;
+//        res[i].symbol = 0;
     }
     return res;
 }
@@ -89,7 +89,7 @@ inline std::string runSimulation(size_t N,
     auto G = PolarCoder::getGN(N);
 
 #pragma omp parallel for
-    for (size_t i = 1; i < 14; i++) {
+    for (size_t i = 10; i < 14; i++) {
         double ii = (double) i / 2;
         auto gaussianChannel = Channel(ii);
         auto cPC = PolarCodeConstruct(ii);
@@ -150,12 +150,13 @@ inline std::string runSimulation(size_t N,
                 eFER += 1;
             }
         }
-        size_t totalAmount = 0;
-        if (isBER) {
-            totalAmount = wordsAmount * K;
-        } else {
-            totalAmount = wordsAmount;
-        }
+//        size_t totalAmount = [=] {
+//            if (isBER) {
+//                return wordsAmount * K;
+//            } else {
+//                return wordsAmount;
+//            }
+//        }();
 //        std::cout << ii << std::endl;
         std::ostringstream ssBER;
         std::ostringstream ssFER;
