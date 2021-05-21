@@ -161,6 +161,7 @@ inline std::string runSimulation(size_t N,
     std::ostringstream output;
     if (isLP) {
         output << "alpha: " << alpha << std::endl;
+        output << "mu: " << mu << std::endl;
     }
     output << "BER" << std::endl;
     for (auto &ber : bers) {
