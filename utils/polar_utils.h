@@ -77,8 +77,8 @@ inline std::string runSimulation(size_t N,
                                  bool isSystematic,
                                  bool isBER,
                                  bool isLP) {
-    constexpr size_t LB = 10;
-    constexpr size_t RB = 14;
+    constexpr size_t LB = 12;
+    constexpr size_t RB = 20;
     constexpr size_t SIZE = RB - LB;
 
     std::vector<std::string> bers = std::vector<std::string>(SIZE);
@@ -138,6 +138,7 @@ inline std::string runSimulation(size_t N,
                 }
             }
             if (compareWords(dW, myMsg) > 0) {
+                std::cout << compareWords(dW, myMsg) << std::endl;
                 if (isBER) {
                     e += compareWords(dW, myMsg);
                 } else {

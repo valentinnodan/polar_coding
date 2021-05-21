@@ -58,8 +58,8 @@ inline void runSimulationLDPC(size_t wordsAmount, size_t ebLeftBorder, size_t eb
             for (size_t i1 = 0; i1 < N; ++i1) {
                 l[i1] = 2 * gaussWord[i1].symbol / s;
             }
-            auto res = decoder.decode(N, l, ss.second, ss.first, 200);
-            auto resBP = decoderBP.decode( N, l, ss.second, ss.first, 200);
+            auto res = decoder.decode(N, l, ss.second, ss.first, 60);
+            auto resBP = decoderBP.decode( N, l, ss.second, ss.first, 60);
             if (compareWords(res, r) > 0) {
                 e += 1;
                 eBER += compareWords(res, r);

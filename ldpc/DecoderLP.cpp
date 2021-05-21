@@ -14,29 +14,35 @@ Message DecoderLP::decode(size_t needed, const std::vector<double> &llr,
     assert (n == Nv.height);
     assert (r == Nc.height);
     auto &l = data.lMatrix;
+    auto &m = data.mMatrix;
+    auto &prevL = data.prevL;
     l.zero();
+    m.zero();
     auto &sums = data.sums;
     std::fill(sums.begin(), sums.end(), 0);
 
     auto &x = data.decode_x; //std::vector<double>(n, 0);
     auto &v = data.decode_v; //std::vector<double>(n, 0); // max deg
 
-    for (size_t k = 0; k < iter; k++) {
-        for (size_t i = 0; i < n; i++) {
-            x[i] = projectDot(penalize(sums[i] - llr[i]) / Nv[i][0]);
-            sums[i] = 0;
-        }
+    for (size_t i = 0; i < n; i++) {
+        sums[i] = penalize(-llr[i]);
+    }
 
+    for (size_t k = 0; k < iter; k++) {
+        std::swap(prevL, l);
         for (size_t i = 0; i < r; i++) {
             for (size_t j = 1; j <= Nc[i][0]; j++) {
                 size_t jj = Nc[i][j];
-                v[j - 1] = x[jj] + l[i][j - 1];
+                x[jj] = projectDot(sums[jj] / Nv[jj][0]);
+                v[j - 1] = x[jj] + prevL[i][j - 1];
             }
             auto &z = projectPolytope(v, Nc[i][0]);
             for (size_t j = 1; j <= Nc[i][0]; j++) {
                 size_t jj = Nc[i][j];
                 l[i][j - 1] = v[j - 1] - z[j - 1];
-                sums[jj] += 2 * z[j - 1] - v[j - 1];
+                sums[jj] -= m[i][jj];
+                m[i][jj] = 2 * z[j - 1] - v[j - 1];
+                sums[jj] += m[i][jj];
             }
         }
     }
@@ -44,7 +50,7 @@ Message DecoderLP::decode(size_t needed, const std::vector<double> &llr,
     res.reserve(needed);
     for (size_t i = 0; i < needed; i++) {
         size_t i1 = i + n - needed;
-        double tX = projectDot(penalize(sums[i1] - llr[i1]) / Nv[i1][0]);
+        double tX = projectDot(sums[i1] / Nv[i1][0]);
         if (tX > 0) {
             res.emplace_back(1);
         } else {
