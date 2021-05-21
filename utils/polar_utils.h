@@ -74,11 +74,12 @@ inline std::string runSimulation(size_t N,
                                  size_t K,
                                  size_t wordsAmount,
                                  double alpha,
+                                 double mu,
                                  bool isSystematic,
                                  bool isBER,
                                  bool isLP) {
-    constexpr size_t LB = 12;
-    constexpr size_t RB = 20;
+    constexpr size_t LB = 3;
+    constexpr size_t RB = 11;
     constexpr size_t SIZE = RB - LB;
 
     std::vector<std::string> bers = std::vector<std::string>(SIZE);
@@ -109,6 +110,7 @@ inline std::string runSimulation(size_t N,
         auto decoder = PolarDecoderLP(gaussianChannel, pair, N, K);
         if (isLP) {
             decoder.setAlpha(alpha);
+            decoder.setMu(mu);
         }
         int e = 0;
         int eBER = 0;
@@ -138,7 +140,7 @@ inline std::string runSimulation(size_t N,
                 }
             }
             if (compareWords(dW, myMsg) > 0) {
-                std::cout << compareWords(dW, myMsg) << std::endl;
+//                std::cout << compareWords(dW, myMsg) << std::endl;
                 if (isBER) {
                     e += compareWords(dW, myMsg);
                 } else {

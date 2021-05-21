@@ -25,6 +25,8 @@ public:
                    const Matrix<size_t> &Nc,
                    size_t iter);
     double alpha = 0.1;
+    double mu = 3;
+    double ro = 1.9;
 
 private:
 
@@ -38,9 +40,9 @@ private:
         std::vector<double> sums;
         Matrix<double> lMatrix;
         Matrix<double> mMatrix;
-        Matrix<double> prevL;
+        Matrix<double> prevZ;
 
-        data(size_t n, size_t r) : decode_x(n), decode_v(MAX_DEG), xl1(MAX_DEG), xl2(MAX_DEG), xl3(MAX_DEG), xl4(MAX_DEG), sums(n), lMatrix(r, n), mMatrix(r, n), prevL(r, n) {}
+        data(size_t n, size_t r) : decode_x(n), decode_v(MAX_DEG), xl1(MAX_DEG), xl2(MAX_DEG), xl3(MAX_DEG), xl4(MAX_DEG), sums(n), lMatrix(r, n), mMatrix(r, n), prevZ(r, n) {}
     };
 
     data data;

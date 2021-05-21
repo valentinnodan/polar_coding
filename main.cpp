@@ -9,21 +9,14 @@ int main() {
     size_t N = 256;
     size_t K = 128;
     const size_t wordsAmount = 100;
-//
-//
-    runSimulationLDPC(wordsAmount, 3, 15);
-//    auto cres = std::async(std::launch::async, runSimulation, N, K, wordsAmount, 0.1, true, true, true);
-//    auto res0 = std::async(std::launch::async, runSimulation, N, K, wordsAmount, 0.125, true, true, true);
-//    auto res1 = std::async(std::launch::async, runSimulation, N, K, wordsAmount, 0.05, true, true, true);
-//    auto res2 = std::async(std::launch::async, runSimulation, N, K, wordsAmount, 0.075, true, true, true);
-//    auto res3 = std::async(std::launch::async, runSimulation, N, K, wordsAmount, 0.2, true, true, true);
 
-//    std::cout << bres.get() << std::endl;
-//    std::cout << cres.get() << std::endl;
-//    std::cout << res0.get() << std::endl;
-//    std::cout << res1.get() << std::endl;
-//    std::cout << res2.get() << std::endl;
-//    std::cout << res3.get() << std::endl;
+//    runSimulationLDPC(wordsAmount, 3, 15);
+    for (size_t a = 25; a <= 150; a += 25) {
+        for (size_t mu = 275; mu <= 425; mu += 25) {
+            auto cres =  runSimulation(N, K, wordsAmount, (double)a/100, (double) mu/100, true, true, true);
+            std::cout << cres << std::endl;
+        }
+    }
 
     return 0;
 }

@@ -24,9 +24,14 @@ public:
         alpha = alpha_new;
         data.decoderLDPC.alpha = alpha;
     }
+    void setMu (double mu_new) {
+        mu = mu_new;
+        data.decoderLDPC.mu = mu;
+    }
 
 private:
     double alpha = 0.1;
+    double mu = 3.;
 
     struct data {
         std::vector<double> decode_l;

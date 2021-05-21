@@ -8,7 +8,7 @@
 
 inline std::pair<Matrix<size_t>,
         Matrix<size_t>> transformToSets() {
-    std::ifstream in("ldpc/tanner.txt");
+    std::ifstream in("tanner.txt");
     if (!in) {
         std::cout << "Failed to open file " << std::endl;
         exit(0);
