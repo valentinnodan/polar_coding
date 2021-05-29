@@ -14,7 +14,7 @@ Matrix<int> LDPCCoder::transformH(const Matrix<int> &H) {
 
     size_t row = H.height;
     size_t column = H.width;
-    int i = 0, j = 0;
+    size_t i = 0, j = 0;
     while (i < row && j < column) {
         if (GaussH[i][j] == 0) {
             for (size_t t = i + 1; t < row; ++t) {

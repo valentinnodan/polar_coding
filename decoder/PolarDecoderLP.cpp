@@ -18,7 +18,7 @@ Message PolarDecoderLP::decode(const Message &y, const std::set<size_t> &indices
         l[i + kk - step] = 2 * y[i].symbol / s;
     }
 
-    auto decodedWord = data.decoderLDPC.decode(n, l, pair.second, pair.first, 500);
+    auto decodedWord = data.decoderLDPC.decode(n, l, pair.second, pair.first, 300);
     for (size_t p = 0; p < n; p++) {
         if (indices.count(p) == 0) {
             decodedWord[p].symbol = 0;
