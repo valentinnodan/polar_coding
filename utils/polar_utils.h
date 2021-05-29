@@ -78,7 +78,7 @@ inline std::string runSimulation(size_t N,
                                  bool isSystematic,
                                  bool isBER,
                                  bool isLP) {
-    constexpr size_t LB = 3;
+    constexpr size_t LB = 2;
     constexpr size_t RB = 11;
     constexpr size_t SIZE = RB - LB;
 
@@ -115,7 +115,10 @@ inline std::string runSimulation(size_t N,
         int e = 0;
         int eBER = 0;
         int eFER = 0;
-        for (size_t j = 0; j < wordsAmount; j++) {
+        size_t wI = 0;
+        while (!(eFER > 15 && wI > wordsAmount)) {
+//            std::cout << eBER <<  " " << eFER << " " << wI << std::endl;
+            wI++;
             auto myMsg = getRandomWord(K);
             auto cW = PolarCoder::encode(myMsg, A, frozen, reversedIndexes, false);
             if (isSystematic) {
@@ -153,10 +156,11 @@ inline std::string runSimulation(size_t N,
 
         std::ostringstream ssBER;
         std::ostringstream ssFER;
-        ssBER << ii << " " << (double) eBER / (wordsAmount * K);
+        ssBER << ii << " " << (double) eBER / (wI * K);
         bers[i - LB] = (ssBER.str());
-        ssFER << ii << " " << (double) eFER / wordsAmount;
+        ssFER << ii << " " << (double) eFER / wI;
         fers[i - LB] = (ssFER.str());
+//        std::cout << ii << " " << (double) eBER / (wI * K) << std::endl;
     }
     std::ostringstream output;
     if (isLP) {

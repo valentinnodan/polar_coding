@@ -129,7 +129,7 @@ Matrix<T>::Matrix(size_t h, size_t w, T val) : height(h), width(w), data(h * w) 
 
 template<typename T>
 void Matrix<T>::zero() {
-    if constexpr(std::is_default_constructible_v<T>)
+    if constexpr (std::is_trivially_default_constructible_v<T>)
         std::memset(data.data(), 0, data.size() * sizeof(T));
     else
         std::fill(data.begin(), data.end(), 0);

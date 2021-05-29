@@ -34,7 +34,15 @@ Message DecoderLP::decode(size_t needed, const std::vector<double> &llr,
         for (size_t i = 0; i < r; i++) {
             for (size_t j = 1; j <= Nc[i][0]; j++) {
                 size_t jj = Nc[i][j];
-                x[jj] = projectDot(sums[jj] / (Nv[jj][0]  - 2 * alpha / mu));
+                double p = 0;
+//                std::cout << Nv[jj][0] << std::endl;
+                if (Nv[jj][0] == 2){
+                    p = 2 * 0.00001f / mu;
+                }
+                if (Nv[jj][0] == 3){
+                    p = 2 * 1.0113 / mu;
+                }
+                x[jj] = projectDot(sums[jj] / (Nv[jj][0]  - p));
                 v[j - 1] = ro * x[jj] + l[i][j - 1] + (1 - ro)*prevZ[i][j - 1];
             }
             auto &z = projectPolytope(v, Nc[i][0]);
@@ -82,9 +90,8 @@ double DecoderLP::projectDot(double dot) {
     return dot;
 }
 
-__attribute__((always_inline))
 std::vector<double> &DecoderLP::projectPolytope(const std::vector<double> &v, size_t s) {
-    auto &f = data.xl1;// std::vector<int>(s, 0);
+    auto &f = data.xl1;
     std::fill(f.begin(), f.begin() + s, 0);
     int sum = 0;
     double minV = std::numeric_limits<double>::infinity();
@@ -102,7 +109,7 @@ std::vector<double> &DecoderLP::projectPolytope(const std::vector<double> &v, si
     if (sum % 2 == 0) {
         f[minInd] = 1 - f[minInd];
     }
-    auto &vv = data.xl2; //std::vector<double>(s, 0);
+    auto &vv = data.xl2;
     for (size_t i = 0; i < s; i++) {
         vv[i] = v[i] * powSign(f[i]);
     }
@@ -122,7 +129,7 @@ std::vector<double> &DecoderLP::projectProbabilitySimplex(const std::vector<doub
             u_i = u / i;
         }
     }
-    auto &w = data.xl4;// std::vector<double>(s, 0);
+    auto &w = data.xl4;
     for (size_t i = 0; i < s; i++) {
         w[i] = projectDot(v[i] - u_i - 0.5);
     }

@@ -11,12 +11,15 @@ int main() {
     const size_t wordsAmount = 100;
 
 //    runSimulationLDPC(wordsAmount, 3, 15);
-    for (size_t a = 25; a <= 150; a += 25) {
-        for (size_t mu = 275; mu <= 425; mu += 25) {
-            auto cres =  runSimulation(N, K, wordsAmount, (double)a/100, (double) mu/100, true, true, true);
+    for (size_t a = 175; a <= 225; a += 5) {
+        for (size_t mu = 350; mu <= 390; mu += 5) {
+            auto cres =  runSimulation(N, K, wordsAmount, (double)a/1000, (double) mu/100, true, true, true);
             std::cout << cres << std::endl;
         }
     }
 
+//    auto cres =  runSimulation(N, K, wordsAmount, 0.22, 3.7, true, true, false);
+//    std::cout << cres << std::endl;
+//    runSimulationSC(N, K, wordsAmount, true);
     return 0;
 }
