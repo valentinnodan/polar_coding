@@ -52,8 +52,8 @@ inline void printWord(Message const &cW) {
 inline Message getRandomWord(size_t length) {
     auto res = Message(length);
     for (size_t i = 0; i < length; ++i) {
-//        res[i].symbol = rand() % 2;
-        res[i].symbol = 0;
+        res[i].symbol = rand() % 2;
+//        res[i].symbol = 0;
     }
     return res;
 }
@@ -71,14 +71,19 @@ inline int compareWords(Message const &a, Message const &b) {
 }
 
 inline std::string runSimulation(size_t N,
-                          size_t K,
-                          size_t wordsAmount,
-                          double alpha,
-                          bool isSystematic,
-                          bool isBER,
-                          bool isLP) {
-    std::vector<std::string> bers = std::vector<std::string>();
-    std::vector<std::string> fers = std::vector<std::string>();
+                                 size_t K,
+                                 size_t wordsAmount,
+                                 double alpha,
+                                 double mu,
+                                 bool isSystematic,
+                                 bool isBER,
+                                 bool isLP) {
+    constexpr size_t LB = 3;
+    constexpr size_t RB = 11;
+    constexpr size_t SIZE = RB - LB;
+
+    std::vector<std::string> bers = std::vector<std::string>(SIZE);
+    std::vector<std::string> fers = std::vector<std::string>(SIZE);
     auto reversedIndexes = genReversedIndex(N);
     auto revPlace = std::vector<size_t>(N);
     for (size_t i = 0; i < N; i++) {
@@ -89,7 +94,7 @@ inline std::string runSimulation(size_t N,
     auto G = PolarCoder::getGN(N);
 
 #pragma omp parallel for
-    for (size_t i = 1; i < 14; i++) {
+    for (size_t i = LB; i < RB; i++) {
         double ii = (double) i / 2;
         auto gaussianChannel = Channel(ii);
         auto cPC = PolarCodeConstruct(ii);
@@ -102,9 +107,10 @@ inline std::string runSimulation(size_t N,
         auto H = transform(N, A);
         auto pair = DecoderBP::prepare(H);
 
-        auto decoder = PolarDecoderLP(gaussianChannel, pair);
+        auto decoder = PolarDecoderLP(gaussianChannel, pair, N, K);
         if (isLP) {
-            decoder.alpha = alpha;
+            decoder.setAlpha(alpha);
+            decoder.setMu(mu);
         }
         int e = 0;
         int eBER = 0;
@@ -123,7 +129,7 @@ inline std::string runSimulation(size_t N,
             }
 
             auto gaussWord = gaussianChannel.Gauss(cW, N, K);
-            auto decodedWord = decoder.decode(gaussWord, A, N, K);
+            auto decodedWord = decoder.decode(gaussWord, A);
             if (!isSystematic) {
                 decodedWord = PolarCoder::encode(decodedWord, A, frozen, reversedIndexes, false);
             }
@@ -133,14 +139,8 @@ inline std::string runSimulation(size_t N,
                     dW.emplace_back(decodedWord[p]);
                 }
             }
-//            printWord(dW);
-//            printWord(myMsg);
-//            std::cout << std::endl;
-//            if (j % 100 == 1) {
-//                std::cout << j << std::endl;
-//            }
             if (compareWords(dW, myMsg) > 0) {
-//                std::cout << j << " " << compareWords(dW, myMsg) << std::endl;
+//                std::cout << compareWords(dW, myMsg) << std::endl;
                 if (isBER) {
                     e += compareWords(dW, myMsg);
                 } else {
@@ -150,30 +150,25 @@ inline std::string runSimulation(size_t N,
                 eFER += 1;
             }
         }
-        size_t totalAmount = 0;
-        if (isBER) {
-            totalAmount = wordsAmount * K;
-        } else {
-            totalAmount = wordsAmount;
-        }
-//        std::cout << ii << std::endl;
+
         std::ostringstream ssBER;
         std::ostringstream ssFER;
         ssBER << ii << " " << (double) eBER / (wordsAmount * K);
-        bers.push_back(ssBER.str());
+        bers[i - LB] = (ssBER.str());
         ssFER << ii << " " << (double) eFER / wordsAmount;
-        fers.push_back(ssFER.str());
+        fers[i - LB] = (ssFER.str());
     }
     std::ostringstream output;
     if (isLP) {
         output << "alpha: " << alpha << std::endl;
+        output << "mu: " << mu << std::endl;
     }
     output << "BER" << std::endl;
-    for (auto & ber : bers) {
+    for (auto &ber : bers) {
         output << ber << std::endl;
     }
     output << "FER" << std::endl;
-    for (auto & fer : fers) {
+    for (auto &fer : fers) {
         output << fer << std::endl;
     }
     return output.str();
@@ -201,7 +196,7 @@ inline void runSimulationSC(size_t N,
         auto cPC = PolarCodeConstruct(ii);
         auto A = cPC.construct(N, K);
 
-        const auto decoder = PolarDecoderSC(gaussianChannel);
+        auto decoder = PolarDecoderSC(gaussianChannel, N, K);
         int e = 0;
         for (size_t j = 0; j < wordsAmount; j++) {
             auto myMsg = getRandomWord(K);
@@ -209,7 +204,7 @@ inline void runSimulationSC(size_t N,
             auto cW = PolarCoder::encode(myMsg, A, frozen, reversedIndexes, true);
 
             auto gaussWord = gaussianChannel.Gauss(cW, N, K);
-            auto decodedWord = decoder.decode(gaussWord, A, N, K);
+            auto decodedWord = decoder.decode(gaussWord, A);
 
             auto dW = Message();
             for (size_t p = 0; p < N; p++) {

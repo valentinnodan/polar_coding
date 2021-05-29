@@ -1,11 +1,12 @@
-cmake_minimum_required(VERSION 2.8)
+cmake_minimum_required(VERSION 2.8.12)
 project(PolarCoding)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -pedantic -Wextra")
-set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -mtune=native -g")
-set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address,undefined -D_GLIBCXX_DEBUG")
+set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O3 -g -fno-omit-frame-pointer")
+set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address -D_GLIBCXX_DEBUG")
 
+include_directories(${CMAKE_SOURCE_DIR})
 include_directories(utils)
 
 add_executable(PolarCoding main.cpp
@@ -33,7 +34,7 @@ add_executable(PolarCoding main.cpp
         ldpc/DecoderLP.cpp
         ldpc/DecoderLP.h decoder/PolarDecoderLP.cpp decoder/PolarDecoderLP.h
 #        ldpc/DecoderADMM_LP.cpp ldpc/DecoderADMM_LP.h
-        )
+        ldpc/a.cpp)
 
 find_package(OpenMP)
 if (OPENMP_FOUND)

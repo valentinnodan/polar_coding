@@ -40,6 +40,8 @@ public:
 
     std::vector<T> dot(std::vector<T> const &u);
 
+    void zero();
+
     static Matrix<T> mult(Matrix<T> const &a, Matrix<T> const &b);
 
     size_t height{};
